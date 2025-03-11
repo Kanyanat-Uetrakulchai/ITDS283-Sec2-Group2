@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_svg: ^2.0.17
+  typewritertext: ^3.0.9
 
 dev_dependencies:
   flutter_test:
@@ -17,3 +19,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/
+    - assets/app_logo.png
+    # - assets/icons/
+    # - assets/icons/app_logo.svg
