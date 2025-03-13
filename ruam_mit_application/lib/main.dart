@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:ruam_mit_application/pages/loading_page.dart';
+import 'package:ruam_mit_application/pages/home_page.dart';
+import 'pages/loading_page.dart';
+
 
 void main() {
   runApp(const MainApp());
@@ -16,10 +18,13 @@ class _MainAppState extends State<MainApp> {
   
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: LoadingPage(),
-      ),
+    return MaterialApp(
+      title: 'Application Routes',
+      initialRoute: '/',
+      routes: {
+        '/': (context) => HomePage(),
+        '/loading': (context) => LoadingPage(),
+      },
     );
   }
 }
