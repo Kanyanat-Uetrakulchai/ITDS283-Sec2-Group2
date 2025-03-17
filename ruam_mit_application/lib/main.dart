@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:ruam_mit_application/pages/home_page.dart';
+import 'package:ruam_mit_application/pages/bottomNav.dart';
+// import 'package:ruam_mit_application/pages/home_page.dart';
+// import 'pages/profile_page.dart';
 import 'pages/loading_page.dart';
-
+import 'pages/newPost_page.dart';
+import 'pages/settings_page.dart';
 
 void main() {
   runApp(const MainApp());
@@ -15,15 +18,16 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Application Routes',
       initialRoute: '/',
       routes: {
-        '/': (context) => HomePage(),
+        '/': (context) => Bottomnav(),
         '/loading': (context) => LoadingPage(),
+        '/newPost': (context) => NewpostPage(),
+        '/settings': (context) => SettingsPage(),
       },
     );
   }

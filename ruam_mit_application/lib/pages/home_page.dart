@@ -8,8 +8,24 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      appBar: _appBar(),
+      body: Center(child: Text('Home Page', style: TextStyle(fontSize: 24))),
+    );
+  }
+
+  AppBar _appBar() {
+    return AppBar(
+      backgroundColor: const Color(0xffD63939),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset('assets/app_logo.png', fit: BoxFit.contain, height: 40),
+        ],
+      ),
+    );
   }
 }
