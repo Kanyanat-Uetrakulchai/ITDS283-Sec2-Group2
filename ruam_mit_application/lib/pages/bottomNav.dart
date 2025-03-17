@@ -41,6 +41,7 @@ class _BottomnavState extends State<Bottomnav> {
         color: const Color(0xffD63939),
         child: BottomNavigationBar(
           fixedColor: Colors.white,
+          unselectedItemColor: Colors.white.withAlpha(180),
           type: BottomNavigationBarType.fixed,
           // ลบพื้นหลังขาวกับเงา
           backgroundColor: Colors.transparent,

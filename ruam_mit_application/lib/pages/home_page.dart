@@ -8,7 +8,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,11 +19,11 @@ class _HomePageState extends State<HomePage> {
   AppBar _appBar() {
     return AppBar(
       backgroundColor: const Color(0xffD63939),
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset('assets/app_logo.png', fit: BoxFit.contain, height: 40),
-        ],
+      centerTitle: true,
+      title: Image.asset(
+        'assets/app_logo.png',
+        fit: BoxFit.contain,
+        height: 45,
       ),
     );
   }
