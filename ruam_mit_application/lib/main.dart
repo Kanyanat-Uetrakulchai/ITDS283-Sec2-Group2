@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ruam_mit_application/pages/home_page.dart';
+import 'package:ruam_mit_application/pages/setting_page.dart';
 import 'pages/loading_page.dart';
 
 
@@ -24,6 +25,7 @@ class _MainAppState extends State<MainApp> {
       routes: {
         '/': (context) => HomePage(),
         '/loading': (context) => LoadingPage(),
+        '/setting': (context) => SettingPage(),
       },
     );
   }
