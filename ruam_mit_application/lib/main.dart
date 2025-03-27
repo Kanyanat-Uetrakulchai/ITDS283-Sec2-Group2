@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:ruam_mit_application/pages/home_page.dart';
 import 'package:ruam_mit_application/pages/setting_page.dart';
+=======
+import 'package:ruam_mit_application/pages/bottomNav.dart';
+// import 'package:ruam_mit_application/pages/home_page.dart';
+// import 'pages/profile_page.dart';
+>>>>>>> c8cf02059e4639a2a671cbf45a2fa8962f50d8fe
 import 'pages/loading_page.dart';
-
+import 'pages/newPost_page.dart';
+import 'pages/settings_page.dart';
 
 void main() {
   runApp(const MainApp());
@@ -16,16 +23,20 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Application Routes',
       initialRoute: '/',
       routes: {
-        '/': (context) => HomePage(),
+        '/': (context) => Bottomnav(),
         '/loading': (context) => LoadingPage(),
+<<<<<<< HEAD
         '/setting': (context) => SettingPage(),
+=======
+        '/newPost': (context) => NewpostPage(),
+        '/settings': (context) => SettingsPage(),
+>>>>>>> c8cf02059e4639a2a671cbf45a2fa8962f50d8fe
       },
     );
   }
