@@ -28,5 +28,6 @@ flutter:
   assets:
     - assets/
     - assets/app_logo.png
+    - assets/police_banner.png
     # - assets/icons/
     # - assets/icons/app_logo.svg
