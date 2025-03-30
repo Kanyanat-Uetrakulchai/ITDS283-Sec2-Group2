@@ -11,6 +11,7 @@ class HomePage extends StatelessWidget {
 
   AppBar _appBar() {
     return AppBar(
+      iconTheme: IconThemeData(color: Colors.white),
       backgroundColor: const Color(0xffD63939),
       centerTitle: true,
       title: Image.asset(

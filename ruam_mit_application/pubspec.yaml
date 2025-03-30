@@ -20,6 +20,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  fonts:
+    - family: Prompt
+      fonts:
+        - asset: fonts/Prompt.ttf
+
   assets:
     - assets/
     - assets/app_logo.png
