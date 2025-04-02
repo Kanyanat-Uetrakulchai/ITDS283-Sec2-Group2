@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 
-class NewpostPage extends StatelessWidget {
+class NewpostPage extends StatefulWidget {
+  @override
+  State<NewpostPage> createState() => _NewpostPageState();
+}
+
+class _NewpostPageState extends State<NewpostPage> {
+
+  String? _selectedvalue = 'เลือกธนาคาร';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,8 +29,28 @@ class NewpostPage extends StatelessWidget {
                 'ธนาคาร',
               ),
               Container(
-                child: DropdownButton(items: <String>
-                ['ธนาคารกสิกรไทย', 'ธนาคารกรุงไทย', 'ธนาคารไทยพาณิชย์', 'ธนาคารกรุงเทพ'].map(toElement), onChanged: ,
+                child: DropdownButton(items: <String>[
+                  'ธนาคารกสิกรไทย',
+                  'ธนาคารกรุงไทย',
+                  'ธนาคารไทยพาณิชย์',
+                  'ธนาคารกรุงเทพ'
+                ].map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(
+                        value,
+                        style: TextStyle(),
+                      )
+                    );
+                }).toList(), 
+                onChanged: (value) {
+                  setState(() {
+                    _selectedvalue = value;
+                  });
+                },
+                hint: Text('เลือกธนาคาร'),
+                value: _selectedvalue,
+              )
               )
             ],
           )
