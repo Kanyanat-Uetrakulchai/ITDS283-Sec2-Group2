@@ -13,8 +13,20 @@ class NewpostPage extends StatelessWidget {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
-      body: Center(
-        child: Text('New Post page', style: TextStyle(fontSize: 24)),
+      body: Column(
+        children: [
+          Row(
+            children: [
+              Text(
+                'ธนาคาร',
+              ),
+              Container(
+                child: DropdownButton(items: <String>
+                ['ธนาคารกสิกรไทย', 'ธนาคารกรุงไทย', 'ธนาคารไทยพาณิชย์', 'ธนาคารกรุงเทพ'].map(toElement), onChanged: ,
+              )
+            ],
+          )
+        ],
       ),
     );
   }

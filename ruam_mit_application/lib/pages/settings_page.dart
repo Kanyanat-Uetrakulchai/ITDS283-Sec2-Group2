@@ -39,17 +39,20 @@ class SettingsPage extends StatelessWidget {
               ),
               SizedBox(height: 10,),
               Divider(color: Color(0xFFACACAC),),
-              SizedBox(height: 10,),
               GestureDetector(
                 onTap: () {
-                  Navigator.pushNamed(context, '/');
+                  Navigator.pushNamed(context, '/login');
                 },
-                child: Text(
-                  'ออกจากระบบ',
-                  style: TextStyle(color: Color(0xFFD63939), fontSize: 20, fontFamily: 'Prompt'),
-                ),
+                child: Container(
+                  padding: EdgeInsets.only(top: 10, bottom: 10),
+                  width: 500,
+                  child: Text('ออกจากระบบ',
+                    style: TextStyle(color: Color(0xFFD63939), 
+                    fontSize: 20, 
+                    fontFamily: 'Prompt'),
+                  ),
+                )
               ),
-              SizedBox(height: 10,),
               Divider(color: Color(0xFFACACAC),),
             ],
           ),
