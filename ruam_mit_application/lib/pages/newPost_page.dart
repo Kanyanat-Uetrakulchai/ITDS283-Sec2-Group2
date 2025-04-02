@@ -6,8 +6,7 @@ class NewpostPage extends StatefulWidget {
 }
 
 class _NewpostPageState extends State<NewpostPage> {
-
-  String? _selectedvalue = 'เลือกธนาคาร';
+  String? _selectedvalue;
 
   @override
   Widget build(BuildContext context) {
@@ -23,36 +22,74 @@ class _NewpostPageState extends State<NewpostPage> {
       ),
       body: Column(
         children: [
-          Row(
-            children: [
-              Text(
-                'ธนาคาร',
-              ),
-              Container(
-                child: DropdownButton(items: <String>[
-                  'ธนาคารกสิกรไทย',
-                  'ธนาคารกรุงไทย',
-                  'ธนาคารไทยพาณิชย์',
-                  'ธนาคารกรุงเทพ'
-                ].map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(
-                        value,
-                        style: TextStyle(),
-                      )
-                    );
-                }).toList(), 
-                onChanged: (value) {
-                  setState(() {
-                    _selectedvalue = value;
-                  });
-                },
-                hint: Text('เลือกธนาคาร'),
-                value: _selectedvalue,
-              )
-              )
-            ],
+          Container(
+            margin: EdgeInsets.fromLTRB(15, 15, 15, 10),
+            child: Row(
+              children: [
+                Text(
+                  'ธนาคาร',
+                  style: TextStyle(
+                    fontFamily: 'Prompt',
+                  ),
+                ),
+                SizedBox(width: 10),
+                Expanded( // Ensures the dropdown takes available space
+                  child: Container(
+                    margin: EdgeInsets.only(left: 15),
+                    padding: EdgeInsets.only(left: 50, right: 50),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5.0),
+                      border: Border.all(),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true, // Ensures full width
+                        icon: Padding(
+                          padding: EdgeInsets.only(left: 10), // Push icon left
+                          child: Icon(Icons.keyboard_arrow_down),
+                        ),
+                        iconSize: 24,
+                        alignment: Alignment.center, // Centers selected text
+                        items: [
+                          'ธนาคารกสิกรไทย',
+                          'ธนาคารกรุงไทย',
+                          'ธนาคารไทยพาณิชย์',
+                          'ธนาคารกรุงเทพ'
+                        ].map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Center(
+                              child: Text(
+                                value,
+                                style: TextStyle(
+                                  fontFamily: 'Prompt',
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedvalue = newValue;
+                          });
+                        },
+                        hint: Center(
+                          child: Text(
+                            'เลือกธนาคาร',
+                            style: TextStyle(
+                              fontFamily: 'Prompt',
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        value: _selectedvalue,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           )
         ],
       ),
