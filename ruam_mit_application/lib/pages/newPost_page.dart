@@ -25,6 +25,69 @@ class _NewpostPageState extends State<NewpostPage> {
         child: Column(
           children: [
             bankDropdown(),
+            SizedBox(height: 15,),
+            Row(
+              children: [
+                Text(
+                  'หมายเลขบัญชี',
+                  style: TextStyle(
+                    fontFamily: 'Prompt',
+                    fontSize: 20, 
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 15,),
+            Row(
+              children: [
+                Text(
+                  'ชื่อ - นามสกุล',
+                  style: TextStyle(
+                    fontFamily: 'Prompt',
+                    fontSize: 20, 
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 15,),
+            Row(
+              children: [
+                Text(
+                  'ชื่อร้านค้า',
+                  style: TextStyle(
+                    fontFamily: 'Prompt',
+                    fontSize: 20, 
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 15,),
+            Row(
+              children: [
+                Text(
+                  'ช่องทางการสั่งซื้อ',
+                  style: TextStyle(
+                    fontFamily: 'Prompt',
+                    fontSize: 20, 
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 15,),
+            Row(
+              children: [
+                Text(
+                  'Tag',
+                  style: TextStyle(
+                    fontFamily: 'Prompt',
+                    fontSize: 20, 
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 15,),
+            Divider(color: Color(0xFFACACAC),),
+            SizedBox(height: 15,),
           ],
         ),
       ),
@@ -45,7 +108,7 @@ class _NewpostPageState extends State<NewpostPage> {
               Expanded( // Ensures the dropdown takes available space
                 child: Container(
                   height: 30,
-                  margin: EdgeInsets.only(left: 60),
+                  margin: EdgeInsets.only(left: 100),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(5.0),
                     border: Border.all(),
