@@ -26,11 +26,25 @@ Connection.connect(function (err) {
 // Testing Select ALL Posts
 // method: GET
 // URL: http://localhost:3031/api/posts
+// router.get('/api/posts', function (req, res) {
+//     Connection.query('SELECT * FROM Post', function (error, results) {
+//         if (error) throw error;
+//         return res.send({ error: false, data: results, message: 'Posts retrieved.' });
+//     });
+// });
+
 router.get('/api/posts', function (req, res) {
-    Connection.query('SELECT * FROM Post', function (error, results) {
+    Connection.query('SELECT p.caption, p.p_timestamp, u.profile, u.username FROM Post p INNER JOIN Users u on p.uid = u.uid ORDER BY p.p_timestamp DESC', function (error, results) {
         if (error) throw error;
         return res.send({ error: false, data: results, message: 'Posts retrieved.' });
     });
+});
+
+router.get('/api/pop_tags', function (req, res){
+    Connection.query('SELECT t.tag, COUNT(p.postId) FROM post p RIGHT JOIN tags t ON p.postId = t.postId GROUP BY t.tag ORDER BY COUNT(p.postId) DESC LIMIT 4;', function (error, results){
+        if (error) throw error;
+        return res.send({error: false, data: results, message: 'Popular tags retrieved'})
+    })
 });
 
 /* Bind server เข้ากับ Port ที่กำหนด */

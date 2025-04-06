@@ -9,6 +9,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> _posts = [];
+  List<Map<String, dynamic>> _tags = [];
   bool _loading = false;
   String _response = '';
 
@@ -16,7 +17,10 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _refreshPosts();
+    _getPopTags();
   }
+
+  String url = 'http://192.168.1.54:3031';
 
   Future<void> _refreshPosts() async {
     setState(() {
@@ -25,16 +29,47 @@ class _HomePageState extends State<HomePage> {
       _response = '';
     });
 
-    String url = 'http://192.168.1.54:3031/api/posts';
-
     try {
-      var response = await http.get(Uri.parse(url));
+      var response = await http.get(Uri.parse('$url/api/posts'));
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         final List<dynamic> data = jsonData['data'];
 
         setState(() {
           _posts = data.cast<Map<String, dynamic>>();
+          _response = const JsonEncoder.withIndent('  ').convert(jsonData);
+        });
+      } else {
+        setState(() {
+          _response = 'Error: ${response.statusCode}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _response = 'Exception: $e';
+      });
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> _getPopTags() async {
+    setState(() {
+      _loading = true;
+      _tags = [];
+      _response = '';
+    });
+
+    try {
+      var response = await http.get(Uri.parse('$url/api/pop_tags'));
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        final List<dynamic> data = jsonData['data'];
+
+        setState(() {
+          _tags = data.cast<Map<String, dynamic>>();
           _response = const JsonEncoder.withIndent('  ').convert(jsonData);
         });
       } else {
@@ -73,6 +108,42 @@ class _HomePageState extends State<HomePage> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
+                  ..._tags.map((tag) {
+                    return Wrap(
+                      direction: Axis.horizontal,
+                      children: [
+                        ElevatedButton(
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStateProperty.all<Color>(
+                              const Color(0xffD63939),
+                            ),
+                          ),
+                          onPressed: () {},
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                tag['tag'],
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(width: 5),
+                              Text(
+                                tag['COUNT(p.postId)'].toString(),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
                   Divider(color: Color(0xFFACACAC)),
                   SizedBox(height: 20),
                   Text(
@@ -86,6 +157,7 @@ class _HomePageState extends State<HomePage> {
                   SizedBox(height: 10),
                   ..._posts.map((post) {
                     return Card(
+                      color: Colors.white,
                       elevation: 3,
                       margin: EdgeInsets.symmetric(vertical: 10),
                       shape: RoundedRectangleBorder(
@@ -96,30 +168,17 @@ class _HomePageState extends State<HomePage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              post['caption'] ?? '',
-                              style: TextStyle(
-                                fontFamily: 'Prompt',
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                            ListTile(
+                              leading: CircleAvatar(),
+                              title: Text(post['username'].toString()),
+                              trailing: Text(
+                                post['p_timestamp'].toString().split('T')[0],
                               ),
                             ),
                             SizedBox(height: 6),
-                            Text(post['detail'] ?? ''),
-                            SizedBox(height: 8),
-                            Text('ชื่อมิจฉาชีพ: ${post['mij_name'] ?? '-'}'),
-                            Text('บัญชี: ${post['mij_acc'] ?? '-'}'),
                             Text(
-                              'ธนาคาร: ${post['mij_bank']} (${post['mij_bankno']})',
-                            ),
-                            Text('แพลตฟอร์ม: ${post['mij_plat'] ?? '-'}'),
-                            SizedBox(height: 4),
-                            Text(
-                              'โพสต์เมื่อ: ${post['p_timestamp'] ?? '-'}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
+                              post['caption'] ?? '',
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),

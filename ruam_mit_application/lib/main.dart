@@ -35,20 +35,4 @@ class _MainAppState extends State<MainApp> {
       },
     );
   }
-  //   @override
-  // void initState() {
-  //   super.initState();
-  //   _initDatabase();
-  // }
-  //   Future<void> _initDatabase() async {
-  //   final conn = await MySQLConnection.createConnection(
-  //     host: "192.168.1.54", // ip from ioconfig
-  //     port: 3309, // Add the port the server is running on
-  //     userName: "mobile_conn", // Your username
-  //     password: "ict!!!555", // Your password
-  //     databaseName: "mobile_s2_gr2", // Your DataBase name
-  //   );
-
-  //   conn.connect();
-  // }
 }
