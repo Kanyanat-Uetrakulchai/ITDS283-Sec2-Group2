@@ -6,10 +6,10 @@ import 'package:ruam_mit_application/pages/login_page.dart';
 import 'pages/loading_page.dart';
 import 'pages/newPost_page.dart';
 import 'pages/settings_page.dart';
-import 'package:mysql_client/mysql_client.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+Future<void> main() async{
+  await dotenv.load(fileName: ".env");
   runApp(const MainApp());
 }
 
@@ -21,6 +21,7 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

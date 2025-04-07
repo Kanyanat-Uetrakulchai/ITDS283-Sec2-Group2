@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // for jsonDecode
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'post_page.dart';
+import 'post_bytag.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -20,7 +23,7 @@ class _HomePageState extends State<HomePage> {
     _getPopTags();
   }
 
-  String url = 'http://192.168.1.54:3031';
+  final url = dotenv.env['url'];
 
   Future<void> _refreshPosts() async {
     setState(() {
@@ -108,42 +111,7 @@ class _HomePageState extends State<HomePage> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  ..._tags.map((tag) {
-                    return Wrap(
-                      direction: Axis.horizontal,
-                      children: [
-                        ElevatedButton(
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStateProperty.all<Color>(
-                              const Color(0xffD63939),
-                            ),
-                          ),
-                          onPressed: () {},
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                tag['tag'],
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(width: 5),
-                              Text(
-                                tag['COUNT(p.postId)'].toString(),
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    );
-                  }),
+                  _poptags(),
                   Divider(color: Color(0xFFACACAC)),
                   SizedBox(height: 20),
                   Text(
@@ -156,37 +124,106 @@ class _HomePageState extends State<HomePage> {
                   ),
                   SizedBox(height: 10),
                   ..._posts.map((post) {
-                    return Card(
-                      color: Colors.white,
-                      elevation: 3,
-                      margin: EdgeInsets.symmetric(vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ListTile(
-                              leading: CircleAvatar(),
-                              title: Text(post['username'].toString()),
-                              trailing: Text(
-                                post['p_timestamp'].toString().split('T')[0],
+                    return InkWell(
+                      onTap: () {
+                        print('post ${post['postId']} clicked!');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => PostPage(postId: post['postId']),
+                          ),
+                        );
+                      },
+                      child: Card(
+                        color: Colors.white,
+                        elevation: 3,
+                        margin: EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: Color(0xffD63939),
+                                  child: Text(
+                                    post['username']
+                                            ?.toString()
+                                            .substring(0, 1)
+                                            .toUpperCase() ??
+                                        '?',
+                                  ),
+                                ),
+                                title: Text(post['username'].toString()),
+                                trailing: Text(
+                                  post['p_timestamp'].toString().split('T')[0],
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 6),
-                            Text(
-                              post['caption'] ?? '',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ],
+                              SizedBox(height: 6),
+                              Text(
+                                post['caption'] ?? '',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
                   }).toList(),
                 ],
               ),
+    );
+  }
+
+  Wrap _poptags() {
+    // return Wrap();
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children:
+          _tags.map((tag) {
+            return ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xffD63939),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PostBytag(tag: tag['tag']),
+                  ),
+                );
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    tag['tag'],
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(width: 5),
+                  Text(
+                    tag['COUNT(p.postId)'].toString(),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
     );
   }
 

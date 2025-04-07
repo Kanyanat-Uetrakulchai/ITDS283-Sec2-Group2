@@ -34,7 +34,15 @@ Connection.connect(function (err) {
 // });
 
 router.get('/api/posts', function (req, res) {
-    Connection.query('SELECT p.caption, p.p_timestamp, u.profile, u.username FROM Post p INNER JOIN Users u on p.uid = u.uid ORDER BY p.p_timestamp DESC', function (error, results) {
+    Connection.query('SELECT p.postId, p.caption, p.p_timestamp, u.profile, u.username FROM Post p INNER JOIN Users u on p.uid = u.uid ORDER BY p.p_timestamp DESC', function (error, results) {
+        if (error) throw error;
+        return res.send({ error: false, data: results, message: 'Posts retrieved.' });
+    });
+});
+
+router.get('/api/posts/:tag', function (req, res) {
+    let tag = req.params.tag
+    Connection.query('SELECT p.postId, p.caption, p.p_timestamp, u.profile, u.username FROM (Post p INNER JOIN Users u on p.uid = u.uid)INNER JOIN Tags t on p.postId = t.postId ORDER BY p.p_timestamp DESC', function (error, results) {
         if (error) throw error;
         return res.send({ error: false, data: results, message: 'Posts retrieved.' });
     });
@@ -44,6 +52,22 @@ router.get('/api/pop_tags', function (req, res){
     Connection.query('SELECT t.tag, COUNT(p.postId) FROM post p RIGHT JOIN tags t ON p.postId = t.postId GROUP BY t.tag ORDER BY COUNT(p.postId) DESC LIMIT 4;', function (error, results){
         if (error) throw error;
         return res.send({error: false, data: results, message: 'Popular tags retrieved'})
+    })
+});
+
+router.get('/api/post/:postId', function (req, res){
+    let postId = req.params.postId
+    Connection.query('SELECT * FROM Post WHERE postId = ?;',postId, function (error, results){
+        if (error) throw error;
+        return res.send({error: false, data: results, message: 'Post retrieved'})
+    })
+});
+
+router.get('/api/user/:uid', function (req, res){
+    let uid = req.params.uid
+    Connection.query('SELECT * FROM Users WHERE uid = ?;',uid, function (error, results){
+        if (error) throw error;
+        return res.send({error: false, data: results, message: 'User retrieved'})
     })
 });
 

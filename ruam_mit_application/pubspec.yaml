@@ -15,6 +15,7 @@ dependencies:
   typewritertext: ^3.0.9
   mysql_client: ^0.0.27
   http: ^1.2.0
+  flutter_dotenv: ^5.2.1
 
 dev_dependencies:
   flutter_test:
@@ -34,5 +35,6 @@ flutter:
     - assets/app_logo.png
     - assets/app_logo_white.png
     - assets/police_banner.png
+    - .env
     # - assets/icons/
     # - assets/icons/app_logo.svg

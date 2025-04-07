@@ -15,7 +15,7 @@ class _BottomnavState extends State<Bottomnav> {
     HomePage(),
     SearchPage(),
     HomePage(), // กันที่ไว้ใส่ปุ่มเพิ่มโพสต์
-    ProfilePage(),
+    ProfilePage(uid: 1000001),
     HomePage(),
   ];
   int _selected_page = 0;
