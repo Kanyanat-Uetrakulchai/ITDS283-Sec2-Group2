@@ -4,11 +4,13 @@
 > create user for the database <br>
 <br>
 ## Step 2
+<br>
 > edit .env file in database folder <br>
 > npm install packages in package.json <br>
 > npm start <br>
 <br>
 ## Step 3
+<br>
 > check ip with ipconfig in cmd <br>
 > edit .env file in ruam_mit_application folder <br>
 > url = 'http://{your ip address}:3031' <br>
