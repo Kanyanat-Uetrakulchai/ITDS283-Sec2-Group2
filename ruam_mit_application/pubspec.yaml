@@ -35,6 +35,7 @@ flutter:
     - assets/app_logo.png
     - assets/app_logo_white.png
     - assets/police_banner.png
+    - assets/login_button.png
     - .env
     # - assets/icons/
     # - assets/icons/app_logo.svg
