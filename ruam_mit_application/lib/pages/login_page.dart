@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ruam_mit_application/pages/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,42 +15,71 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffFFFFFF),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('assets/app_logo_white.png'),
-            const SizedBox(height: 20),
-            const Text(
-              'เข้าสู่ระบบ',
-              style: TextStyle(
-                fontFamily: 'Prompt',
-                fontSize: 20,
+      body: Stack(
+        children: [
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('assets/app_logo_white.png'),
+                const SizedBox(height: 20),
+                const Text(
+                  'เข้าสู่ระบบ',
+                  style: TextStyle(
+                    fontFamily: 'Prompt',
+                    fontSize: 20,
+                  ),
+                ),
+                const SizedBox(height: 25),
+                buildTextFieldRow('username', _usernameController),
+                const SizedBox(height: 25),
+                buildTextFieldRow('password', _passwordController, isPassword: true),
+                const SizedBox(height: 25),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, '/loading');
+                  },
+                  child: Image.asset('assets/login_button.png'),
+                ),
+                const SizedBox(height: 30),
+              ],
+            ),
+          ),
+          Positioned(
+            bottom: 80,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'ผู้ใช้งานใหม่',
+                    style: TextStyle(
+                      fontFamily: 'Prompt',
+                      fontSize: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  GestureDetector(
+                    onTap: () {
+                      // Navigate to registration
+                    },
+                    child: const Text(
+                      'ลงทะเบียน',
+                      style: TextStyle(
+                        color: Color(0xFFD63939),
+                        decoration: TextDecoration.underline,
+                        fontFamily: 'Prompt',
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 25),
-            buildTextFieldRow('username', _usernameController),
-            const SizedBox(height: 25),
-            buildTextFieldRow('password', _passwordController, isPassword: true),
-            const SizedBox(height: 25),
-            GestureDetector(
-              onTap: () {
-              },
-              child: Image.asset('assets/login_button.png'),
-            ),
-            const SizedBox(height: 30),
-            // Registration prompt
-            const Text(
-              'ผู้ใช้งานใหม่ ลงทะเบียน',
-              style: TextStyle(
-                fontFamily: 'Prompt',
-                fontSize: 18,
-                color: Color(0xFFD63939),
-                decoration: TextDecoration.underline,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
