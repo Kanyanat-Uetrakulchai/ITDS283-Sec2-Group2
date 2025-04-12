@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // for jsonDecode
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../helpers/user_storage.dart';
 
 class ProfilePage extends StatefulWidget {
   final int uid;
@@ -33,9 +35,7 @@ class ProfilePageState extends State<ProfilePage> {
     });
 
     try {
-      var response = await http.get(
-        Uri.parse('$url/api/user/${widget.uid}'),
-      );
+      var response = await http.get(Uri.parse('$url/api/user/${widget.uid}'));
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         final List<dynamic> data = jsonData['data'];

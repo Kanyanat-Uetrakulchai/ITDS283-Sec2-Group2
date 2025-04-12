@@ -23,7 +23,7 @@ class _HomePageState extends State<HomePage> {
     _getPopTags();
   }
 
-  final url = dotenv.env['url'];
+  // final url = dotenv.env['url'];
 
   Future<void> _refreshPosts() async {
     setState(() {
@@ -33,7 +33,9 @@ class _HomePageState extends State<HomePage> {
     });
 
     try {
-      var response = await http.get(Uri.parse('$url/api/posts'));
+      var response = await http.get(
+        Uri.parse('${dotenv.env['url']}/api/posts'),
+      );
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         final List<dynamic> data = jsonData['data'];
@@ -66,7 +68,9 @@ class _HomePageState extends State<HomePage> {
     });
 
     try {
-      var response = await http.get(Uri.parse('$url/api/pop_tags'));
+      var response = await http.get(
+        Uri.parse('${dotenv.env['url']}/api/pop_tags'),
+      );
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         final List<dynamic> data = jsonData['data'];

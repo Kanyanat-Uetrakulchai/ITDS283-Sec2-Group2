@@ -9,7 +9,7 @@ import 'pages/newPost_page.dart';
 import 'pages/settings_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-Future<void> main() async{
+Future<void> main() async {
   await dotenv.load(fileName: ".env");
   runApp(const MainApp());
 }
@@ -22,16 +22,15 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Application Routes',
-      initialRoute: '/',
+      initialRoute: '/loading',
       routes: {
         '/': (context) => Bottomnav(),
         '/home': (context) => HomePage(),
-        '/loading': (context) => LoadingPage(),
+        '/loading': (context) => SplashScreen(),
         '/login': (context) => LoginPage(),
         '/newPost': (context) => NewpostPage(),
         '/settings': (context) => SettingsPage(),
