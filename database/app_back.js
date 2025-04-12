@@ -63,6 +63,14 @@ router.get('/api/post/:postId', function (req, res){
     })
 });
 
+router.get('/api/post/profile/:uid', function (req, res){
+    let uid = req.params.uid
+    Connection.query('SELECT * FROM Post JOIN Users ON Post.uid = Users.uid WHERE Users.uid = ? ORDER BY p_timestamp DESC;',uid, function (error, results){
+        if (error) throw error;
+        return res.send({error: false, data: results, message: 'Post retrieved'})
+    })
+});
+
 router.get('/api/user/:uid', function (req, res){
     let uid = req.params.uid
     Connection.query('SELECT * FROM Users WHERE uid = ?;',uid, function (error, results){
