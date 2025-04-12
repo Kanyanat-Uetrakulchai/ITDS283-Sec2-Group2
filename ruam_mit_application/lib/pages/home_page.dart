@@ -233,7 +233,6 @@ class _HomePageState extends State<HomePage> {
 
   AppBar _appBar() {
     return AppBar(
-      automaticallyImplyLeading: false,
       iconTheme: IconThemeData(color: Colors.white),
       backgroundColor: const Color(0xffD63939),
       centerTitle: true,
