@@ -30,7 +30,6 @@ class _MainAppState extends State<MainApp> {
       initialRoute: '/',
       routes: {
         '/': (context) => Bottomnav(),
-        '/home': (context) => HomePage(),
         '/loading': (context) => LoadingPage(),
         '/login': (context) => LoginPage(),
         '/newPost': (context) => NewpostPage(),
