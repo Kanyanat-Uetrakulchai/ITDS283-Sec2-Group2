@@ -22,6 +22,10 @@ create table if not exists Post (
     mij_plat		varchar(20),
     p_timestamp		datetime,
     uid				int,
+    p_p1			varchar(300),
+    p_p2			varchar(300),
+    p_p3			varchar(300),
+    p_p4			varchar(300),
     constraint 		PK_post 		primary key (postId),
     constraint		FK_post			foreign key (uid) references Users(uid)
 );
@@ -31,15 +35,6 @@ create table if not exists Tags(
     postId			int				not null,
     constraint 		PK_tags 		primary key (tag,postId),
     constraint 		FK_tags 		foreign key (postId) references Post(postId)
-);
-
--- Post's Pictures 
-create table if not exists P_Pics (
-	postId			int,
-    picNo			int,
-    pic				blob,
-    constraint		PK_p_pics 		primary key (postId, picNo),
-    constraint		FK_p_pics		foreign key (postId) references Post(postId)
 );
 
 create table if not exists Likes(
@@ -57,18 +52,13 @@ create table Comments(
     uid				int,
     message			varchar(100),
     c_timestamp		datetime,
+    c_p1			varchar(300),
+    c_p2			varchar(300),
+    c_p3			varchar(300),
+    c_p4			varchar(300),
     constraint 		PK_comm 		primary key (commid),
     constraint		FK_comm_p		foreign key (postId) references Post(postId),
     constraint		FK_comm_u		foreign key (uid) references Users(uid)
-);
-
--- Comment's Pictures 
-create table if not exists C_Pics (
-	commId			int,
-    picNo			int,
-    pic				blob,
-    constraint		PK_c_pics 		primary key (commId, picNo),
-    constraint		FK_c_pics		foreign key (commId) references Comments(commId)
 );
 
 -- first post has to specify to initiate autoincrement
@@ -81,11 +71,11 @@ insert into Post (caption, detail, mij_bank, mij_bankno, mij_name, mij_acc, mij_
 );
 
 insert into Users values
-	(null, 'สมาชิก A', 'p@ssw0rd123', null, '2025-03-03');
+	(null, 'member A', 'p@ssw0rd123', null, '2025-03-03');
     
 insert into Post values(
 	null, 'test post no 2', 'poiufdsdcvbnmklkjhgfdcvbnm,lkjhgfvbnm,lkjhgf',
-    'กรุงศรี', '3698521470', 'นี่ ก็มิจจ้า', 'phish shop', 'instagram', '2025-04-08 20:20:20', 1000002
+    'กรุงศรี', '3698521470', 'นี่ ก็มิจจ้า', 'phish shop', 'instagram', '2025-04-08 20:20:20', 1000002, null, null, null, null
 );
 
 insert into tags values
@@ -108,4 +98,4 @@ select p.* from post p inner join tags t on p.postId = t.postId where t.tag = 't
 select t.tag from post p inner join tags t on p.postId = t.postId where p.postId = 1;
 
 -- fetch number of post by tag
-select count(p.postId) from post p inner join tags t on p.postId = t.postId where t.tag = 'tag';
+select t.tag, count(p.postId) from post p right join tags t on p.postId = t.postId group by t.tag order by count(p.postId) desc limit 4;

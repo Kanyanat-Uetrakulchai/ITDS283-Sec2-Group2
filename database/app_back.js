@@ -21,15 +21,15 @@ var Connection = mysql.createConnection({
 
 app.use('/uploads', express.static('uploads'));
 
+// Multer storage config
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, 'uploads/');
-    },
-    filename: function (req, file, cb) {
-      const uniqueName = Date.now() + '_' + Math.round(Math.random() * 1e9) + path.extname(file.originalname);
-      cb(null, uniqueName);
+    destination: (req, file, cb) => cb(null, 'uploads/'),
+    filename: (req, file, cb) => {
+        const uniqueName = Date.now() + '_' + Math.round(Math.random() * 1e9) + path.extname(file.originalname);
+        cb(null, uniqueName);
     }
-  });
+});
+const upload = multer({ storage: storage });
 
 /* เชื่อมต่อ Connect ไปที่ฐานข้อมูล */
 Connection.connect(function (err) {
@@ -114,27 +114,67 @@ router.post('/api/login', function (req, res) {
 });
 
 
-router.post('/api/upload-post-images', (req, res) => {
-    upload(req, res, function (err) {
-      if (err) return res.status(500).json({ status: 'error', message: err.message });
+router.post('/api/posts', upload.array('images', 4), (req, res) => {
+    const {
+      caption,
+      detail,       // this is the post body
+      mij_bank,
+      mij_bankno,
+      mij_name,
+      mij_acc,
+      mij_plat,
+      uid
+    } = req.body;
   
-      const imagePaths = Array(4).fill(null);
+    if (
+      !caption || !detail || !mij_bank || !mij_bankno ||
+      !mij_name || !mij_acc || !mij_plat || !uid
+    ) {
+      return res.status(400).json({ error: true, message: 'Missing required fields' });
+    }
+  
+    // Store up to 4 image paths
+    const imagePaths = Array(4).fill(null);
+    if (req.files && req.files.length > 0) {
       req.files.forEach((file, i) => {
-        imagePaths[i] = `/uploads/${file.filename}`;
+        if (i < 4) imagePaths[i] = `/uploads/${file.filename}`;
       });
+    }
   
-      const sql = `
-        INSERT INTO post (p_p1, p_p2, p_p3, p_p4)
-        VALUES (?, ?, ?, ?)
-      `;
+    const sql = `
+      INSERT INTO Post (
+        caption, detail, mij_bank, mij_bankno, mij_name, mij_acc, mij_plat, uid,
+        p_p1, p_p2, p_p3, p_p4
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
   
-      db.execute(sql, imagePaths, (error, results) => {
-        if (error) return res.status(500).json({ status: 'error', message: error.message });
+    const values = [
+      caption,
+      detail,
+      mij_bank,
+      mij_bankno,
+      mij_name,
+      mij_acc,
+      mij_plat,
+      uid,
+      imagePaths[0],
+      imagePaths[1],
+      imagePaths[2],
+      imagePaths[3]
+    ];
   
-        res.json({ status: 'success', message: 'Images uploaded and saved', paths: imagePaths });
+    Connection.execute(sql, values, (err, results) => {
+      if (err) return res.status(500).json({ error: true, message: err.message });
+  
+      res.status(201).json({
+        success: true,
+        message: 'Post created successfully',
+        postId: results.insertId,
+        imagePaths
       });
     });
   });
+  
 
 /* Bind server เข้ากับ Port ที่กำหนด */
 app.listen(process.env.PORT, () => {

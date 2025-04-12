@@ -34,7 +34,7 @@ class _BottomnavState extends State<Bottomnav> {
   @override
   void initState() {
     super.initState();
-    _uidFuture = getUID(); // Set the Future to fetch UID when initializing
+    _uidFuture = getUID();
   }
 
   @override
