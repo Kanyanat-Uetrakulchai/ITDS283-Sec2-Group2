@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert'; // for jsonDecode
+import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -13,9 +13,9 @@ class ProfilePage extends StatefulWidget {
 }
 
 class ProfilePageState extends State<ProfilePage> {
-  // List<Map<String, dynamic>> Post = [];
   bool _loading = false;
-  String _response = '';
+  List<dynamic> _user = [];
+  String _statusMessage = "";
 
   @override
   void initState() {
@@ -28,8 +28,7 @@ class ProfilePageState extends State<ProfilePage> {
   Future<void> _refreshPosts() async {
     setState(() {
       _loading = true;
-      // _posts = [];
-      _response = '';
+      _user = [];
     });
 
     try {
@@ -39,19 +38,17 @@ class ProfilePageState extends State<ProfilePage> {
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         final List<dynamic> data = jsonData['data'];
-
         setState(() {
-          // _posts = data.cast<Map<String, dynamic>>();
-          _response = const JsonEncoder.withIndent('  ').convert(jsonData);
+          _user = data;
         });
       } else {
         setState(() {
-          _response = 'Error: ${response.statusCode}';
+          _statusMessage = 'Error: ${response.statusCode}';
         });
       }
     } catch (e) {
       setState(() {
-        _response = 'Exception: $e';
+        _statusMessage = 'Exception: $e';
       });
     } finally {
       setState(() {
@@ -63,8 +60,62 @@ class ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Detail Page')),
-      body: Center(child: Text('Received: ${_response}')),
+      body: Column(
+        children: [
+          // Banner section
+          Container(
+            height: 180,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/profile_banner.png'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          // Profile avatar section
+          Expanded(
+            child: Container(
+              transform: Matrix4.translationValues(25.0, -55.0, 0.0),
+              child: Column(
+                children: [
+                  Container(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CircleAvatar(
+                          radius: 55,
+                          backgroundColor: Colors.white,
+                          child: CircleAvatar(
+                            radius: 50,
+                            backgroundColor: Color(0xFFD63939),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // User posts section
+                  Expanded(
+                    child: _loading
+                        ? Center(child: CircularProgressIndicator())
+                        : _user.isEmpty
+                            ? Center(child: Text(_statusMessage))
+                            : ListView.builder(
+                                physics: AlwaysScrollableScrollPhysics(),
+                                itemCount: _user.length,
+                                itemBuilder: (context, index) {
+                                  return Text(
+                                          '${_user[index]}',
+                                          style: TextStyle(fontSize: 16),
+                                  );    
+                                },
+                              ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
