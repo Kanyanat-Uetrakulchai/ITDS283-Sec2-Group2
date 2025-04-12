@@ -1,47 +1,72 @@
 import 'package:flutter/material.dart';
 // import 'package:flutter_svg/flutter_svg.dart';
 import 'package:typewritertext/typewritertext.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:typewritertext/typewritertext.dart';
 
+import 'login_page.dart';
+import 'bottomNav.dart';
 
-class LoadingPage extends StatelessWidget {
-  const LoadingPage({super.key});
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    checkLoginStatus();
+  }
+
+  void checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+    await Future.delayed(const Duration(seconds: 2)); // Optional delay
+
+    if (isLoggedIn) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const Bottomnav()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return 
-    Scaffold(
+    return Scaffold(
       backgroundColor: const Color(0xffD63939),
-      body: Center( 
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          // crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Image(
-              image: AssetImage('assets/app_logo.png')
-            ),
+            const Image(image: AssetImage('assets/app_logo.png')),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
+                const Text(
                   'loading ',
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(color: Colors.white),
                 ),
                 TypeWriter.text(
                   '. . . . ',
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
-                  duration: const Duration(milliseconds: 50),
+                  style: TextStyle(color: Colors.white),
+                  duration: Duration(milliseconds: 50),
                   repeat: true,
                 )
               ],
-              
             )
-            
           ],
-        )
+        ),
       ),
     );
   }
