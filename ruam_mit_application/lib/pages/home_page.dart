@@ -4,6 +4,7 @@ import 'dart:convert'; // for jsonDecode
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'post_page.dart';
 import 'post_bytag.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -95,6 +96,13 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  _launchURL() async {
+    final Uri url = Uri.parse('https://thaipoliceonline.go.th/');
+    if (!await launchUrl(url)) {
+      throw Exception('Could not launch $url');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -105,7 +113,12 @@ class _HomePageState extends State<HomePage> {
               : ListView(
                 padding: EdgeInsets.all(20),
                 children: [
-                  Image.asset('assets/police_banner.png'),
+                  InkWell(
+                    onTap: () {
+                      _launchURL();
+                    },
+                    child: Image.asset('assets/police_banner.png'),
+                  ),
                   SizedBox(height: 20),
                   Text(
                     'แท็กยอดนิยม',
@@ -160,6 +173,7 @@ class _HomePageState extends State<HomePage> {
                                             .substring(0, 1)
                                             .toUpperCase() ??
                                         '?',
+                                    style: TextStyle(color: Colors.white),
                                   ),
                                 ),
                                 title: Text(post['username'].toString()),

@@ -46,7 +46,7 @@ router.get('/api/posts', function (req, res) {
 
 router.get('/api/posts/:tag', function (req, res) {
     let tag = req.params.tag
-    Connection.query('SELECT p.postId, p.caption, p.p_timestamp, u.profile, u.username FROM (Post p INNER JOIN Users u on p.uid = u.uid)INNER JOIN Tags t on p.postId = t.postId ORDER BY p.p_timestamp DESC', function (error, results) {
+    Connection.query('SELECT p.*, u.profile, u.username FROM (Post p INNER JOIN Users u on p.uid = u.uid)INNER JOIN Tags t on p.postId = t.postId ORDER BY p.p_timestamp DESC', function (error, results) {
         if (error) throw error;
         return res.send({ error: false, data: results, message: 'Posts retrieved.' });
     });

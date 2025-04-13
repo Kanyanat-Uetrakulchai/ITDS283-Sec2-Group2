@@ -6,7 +6,7 @@ create table if not exists Users (
 	uid				int				not null	auto_increment,
     username		varchar(20)		not null,
     password		varchar(20)		not null,
-    profile			blob,
+    profile			varchar(300),
     joinDate		date			not null,
     constraint		PK_users		primary key (uid)
 );
@@ -78,6 +78,11 @@ insert into Post values(
     'กรุงศรี', '3698521470', 'นี่ ก็มิจจ้า', 'phish shop', 'instagram', '2025-04-08 20:20:20', 1000002, null, null, null, null
 );
 
+insert into Post values(
+	null, 'หลอกขายเครื่อง ps มือสอง', 'คนขายเครื่อง ps ในกลุ่มเกม โอนแล้วยล็อกเลย',
+    'กรุงศรี', '555-555-5555', 'รรรรร รอเรือกระรัน', 'รรรรร ระเรือกระรัน', 'facebook', '2025-04-08 20:20:20', 1000001, '/uploads/chat_example_p2.jpg', '/uploads/post_example_p2.jpg', null, null
+);
+
 insert into tags values
 	('pets', 1),
     ('food', 1),
@@ -89,13 +94,15 @@ insert into tags values
 insert into Likes values
 	(1, 1000002, true);
 
-select * from Users;
+select * from Post;
 
 -- fetch posts by tag
 select p.* from post p inner join tags t on p.postId = t.postId where t.tag = 'tag';
 
 -- fetch tag of post
 select t.tag from post p inner join tags t on p.postId = t.postId where p.postId = 1;
+
+select * from post p inner join users u on p.uid = u.uid;
 
 -- fetch number of post by tag
 select t.tag, count(p.postId) from post p right join tags t on p.postId = t.postId group by t.tag order by count(p.postId) desc limit 4;

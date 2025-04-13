@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../helpers/user_storage.dart';
 
 class ProfilePage extends StatefulWidget {
   final int uid;
@@ -43,10 +41,12 @@ class ProfilePageState extends State<ProfilePage> {
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
-        
+
         if (jsonData['error'] == false) {
           setState(() {
-            _userData = jsonData['user'] ?? (jsonData['data'].isNotEmpty ? jsonData['data'][0] : {});
+            _userData =
+                jsonData['user'] ??
+                (jsonData['data'].isNotEmpty ? jsonData['data'][0] : {});
             _posts = jsonData['data'] ?? [];
           });
         } else {
@@ -82,9 +82,18 @@ class ProfilePageState extends State<ProfilePage> {
       }
 
       const thaiMonths = [
-        'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
-        'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
-        'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+        'มกราคม',
+        'กุมภาพันธ์',
+        'มีนาคม',
+        'เมษายน',
+        'พฤษภาคม',
+        'มิถุนายน',
+        'กรกฎาคม',
+        'สิงหาคม',
+        'กันยายน',
+        'ตุลาคม',
+        'พฤศจิกายน',
+        'ธันวาคม',
       ];
 
       String thaiMonth = thaiMonths[date.month - 1];
@@ -126,12 +135,20 @@ class ProfilePageState extends State<ProfilePage> {
                           child: CircleAvatar(
                             radius: 50,
                             backgroundColor: Color(0xFFD63939),
-                            child: _userData.isNotEmpty 
-                                ? Text(
-                                    _userData['username']?.toString().substring(0, 1).toUpperCase() ?? 'U',
-                                    style: TextStyle(fontSize: 24, color: Colors.white),
-                                  )
-                                : null,
+                            child:
+                                _userData.isNotEmpty
+                                    ? Text(
+                                      _userData['username']
+                                              ?.toString()
+                                              .substring(0, 1)
+                                              .toUpperCase() ??
+                                          'U',
+                                      style: TextStyle(
+                                        fontSize: 24,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                    : null,
                           ),
                         ),
                       ],
@@ -222,15 +239,17 @@ class ProfilePageState extends State<ProfilePage> {
         // Content
         Container(
           constraints: BoxConstraints(
-            minHeight: MediaQuery.of(context).size.height * 0.5, // Ensure enough space
+            minHeight:
+                MediaQuery.of(context).size.height * 0.5, // Ensure enough space
           ),
-          child: _loading
-              ? Center(child: CircularProgressIndicator())
-              : _posts.isEmpty
+          child:
+              _loading
+                  ? Center(child: CircularProgressIndicator())
+                  : _posts.isEmpty
                   ? Center(child: Text(_statusMessage))
                   : _showFirstTab
-                      ? _buildPostsList()
-                      : _buildFollowingContent(),
+                  ? _buildPostsList()
+                  : _buildFollowingContent(),
         ),
       ],
     );
@@ -254,11 +273,7 @@ class ProfilePageState extends State<ProfilePage> {
             ),
             SizedBox(height: 5),
             if (isActive)
-              Container(
-                width: 100,
-                height: 3,
-                color: Color(0xFFD63939),
-              ),
+              Container(width: 100, height: 3, color: Color(0xFFD63939)),
           ],
         ),
       ),
@@ -280,7 +295,8 @@ class ProfilePageState extends State<ProfilePage> {
               leading: CircleAvatar(
                 backgroundColor: Color(0xFFD63939),
                 child: Text(
-                  post['username']?.toString().substring(0, 1).toUpperCase() ?? '?',
+                  post['username']?.toString().substring(0, 1).toUpperCase() ??
+                      '?',
                   style: TextStyle(color: Colors.white),
                 ),
               ),
@@ -295,6 +311,8 @@ class ProfilePageState extends State<ProfilePage> {
                     post['p_timestamp']?.toString().split('T')[0] ?? '',
                     style: TextStyle(color: Colors.grey),
                   ),
+                  SizedBox(height: 10),
+                  _buildImageGrid(post),
                 ],
               ),
               onTap: () {
@@ -312,11 +330,122 @@ class ProfilePageState extends State<ProfilePage> {
     return Container(
       height: 200, // Give it some height
       child: Center(
-        child: Text(
-          'กำลังติดตาม content',
-          style: TextStyle(fontSize: 16),
-        ),
+        child: Text('กำลังติดตาม content', style: TextStyle(fontSize: 16)),
       ),
     );
+  }
+
+  Widget _buildImageGrid(Map<String, dynamic> post) {
+    List<String> imageFields = ['p_p1', 'p_p2', 'p_p3', 'p_p4'];
+    List<String> imageUrls =
+        imageFields
+            .map((key) => post[key])
+            .whereType<String>()
+            .where((url) => url.isNotEmpty)
+            .toList();
+
+    if (imageUrls.isEmpty) return SizedBox.shrink();
+
+    final baseUrl = dotenv.env['url']?.replaceFirst(RegExp(r'/$'), '') ?? '';
+
+    List<Widget> images =
+        imageUrls
+            .map(
+              (url) => ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  '$baseUrl$url',
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: 150,
+                  errorBuilder:
+                      (context, error, stackTrace) => Icon(Icons.broken_image),
+                ),
+              ),
+            )
+            .toList();
+
+    switch (images.length) {
+      case 1:
+        return images[0];
+      case 2:
+        return Row(
+          children:
+              images
+                  .map(
+                    (img) => Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          right: img != images.last ? 4 : 0,
+                        ),
+                        child: img,
+                      ),
+                    ),
+                  )
+                  .toList(),
+        );
+      case 3:
+        return Column(
+          children: [
+            images[0],
+            SizedBox(height: 4),
+            Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(right: 2),
+                    child: images[1],
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 2),
+                    child: images[2],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      case 4:
+      default:
+        return Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(right: 2),
+                    child: images[0],
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 2),
+                    child: images[1],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 4),
+            Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(right: 2),
+                    child: images[2],
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 2),
+                    child: images[3],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+    }
   }
 }
