@@ -165,19 +165,19 @@ class _HomePageState extends State<HomePage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              ListTile(
-                                leading: InkWell(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (context) =>
-                                                ProfilePage(uid: post['uid']),
-                                      ),
-                                    );
-                                  },
-                                  child: CircleAvatar(
+                              InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) =>
+                                              ProfilePage(uid: post['uid']),
+                                    ),
+                                  );
+                                },
+                                child: ListTile(
+                                  leading: CircleAvatar(
                                     backgroundColor: Color(0xffD63939),
                                     child: Text(
                                       post['username']
@@ -188,16 +188,23 @@ class _HomePageState extends State<HomePage> {
                                       style: TextStyle(color: Colors.white),
                                     ),
                                   ),
-                                ),
-                                title: Text(post['username'].toString()),
-                                trailing: Text(
-                                  post['p_timestamp'].toString().split('T')[0],
+
+                                  title: Text(post['username'].toString()),
+                                  trailing: Text(
+                                    post['p_timestamp'].toString().split(
+                                      'T',
+                                    )[0],
+                                  ),
                                 ),
                               ),
+                              Divider(color: Color(0xFFACACAC)),
                               SizedBox(height: 6),
                               Text(
                                 post['caption'] ?? '',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
                               ),
                               SizedBox(height: 10),
                               _buildImageGrid(post),

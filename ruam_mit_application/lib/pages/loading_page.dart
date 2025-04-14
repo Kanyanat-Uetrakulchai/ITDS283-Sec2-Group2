@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-// import 'package:flutter_svg/flutter_svg.dart';
 import 'package:typewritertext/typewritertext.dart';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:typewritertext/typewritertext.dart';
 
 import 'login_page.dart';
 import 'bottomNav.dart';
@@ -53,18 +50,15 @@ class _SplashScreenState extends State<SplashScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'loading ',
-                  style: TextStyle(color: Colors.white),
-                ),
+                const Text('loading ', style: TextStyle(color: Colors.white)),
                 TypeWriter.text(
                   '. . . . ',
                   style: TextStyle(color: Colors.white),
                   duration: Duration(milliseconds: 50),
                   repeat: true,
-                )
+                ),
               ],
-            )
+            ),
           ],
         ),
       ),

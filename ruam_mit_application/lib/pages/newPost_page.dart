@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -24,13 +23,12 @@ class _NewpostPageState extends State<NewpostPage> {
 
   Future<int?> getUID() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt('uid'); // This gives you the saved UID
+    return prefs.getInt('uid');
   }
 
   @override
   void initState() {
     super.initState();
-    
   }
 
   List<XFile> _selectedImages = [];
@@ -43,7 +41,9 @@ class _NewpostPageState extends State<NewpostPage> {
         _selectedImages = images;
       });
     } else {
-      // Optional: show error if more than 4
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('ใส่รูปได้สูงสุด 4 รูป')));
     }
   }
 
@@ -84,7 +84,9 @@ class _NewpostPageState extends State<NewpostPage> {
     request.fields['mij_name'] = name;
     request.fields['mij_acc'] = shopname;
     request.fields['mij_plat'] = order;
-    request.fields['uid'] = uid?.toString() ?? ''; //Error: Future<int?> cannot be assigned to String
+    request.fields['uid'] =
+        uid?.toString() ??
+        ''; //Error: Future<int?> cannot be assigned to String
 
     for (int i = 0; i < _selectedImages.length; i++) {
       request.files.add(
