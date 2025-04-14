@@ -6,7 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class ProfilePage extends StatefulWidget {
   final int uid;
 
-  const ProfilePage({Key? key, required this.uid}) : super(key: key);
+  const ProfilePage({super.key, required this.uid});
 
   @override
   State<ProfilePage> createState() => ProfilePageState();
@@ -169,48 +169,46 @@ class ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildUserInfo() {
-    return Container(
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                _userData['username'] ?? 'Username',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontFamily: 'Prompt',
-                  fontWeight: FontWeight.w500,
-                ),
+    return Column(
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Text(
+              _userData['username'] ?? 'Username',
+              style: TextStyle(
+                fontSize: 24,
+                fontFamily: 'Prompt',
+                fontWeight: FontWeight.w500,
               ),
-              SizedBox(width: 20),
-              Text(
-                '#${_userData['uid'] ?? '0000'}',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontFamily: 'Prompt',
-                  color: Color(0xFF666666),
-                ),
+            ),
+            SizedBox(width: 20),
+            Text(
+              '#${_userData['uid'] ?? '0000'}',
+              style: TextStyle(
+                fontSize: 16,
+                fontFamily: 'Prompt',
+                color: Color(0xFF666666),
               ),
-            ],
-          ),
-          SizedBox(height: 10),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'เข้าร่วมเมื่อ ${formatThaiDate(_userData['joinDate'])}',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontFamily: 'Prompt',
-                  color: Color(0xFF666666),
-                ),
+            ),
+          ],
+        ),
+        SizedBox(height: 10),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'เข้าร่วมเมื่อ ${formatThaiDate(_userData['joinDate'])}',
+              style: TextStyle(
+                fontSize: 16,
+                fontFamily: 'Prompt',
+                color: Color(0xFF666666),
               ),
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -218,23 +216,19 @@ class ProfilePageState extends State<ProfilePage> {
     return Column(
       children: [
         // Tab selector
-        Container(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildTabButton('โพสต์ของฉัน', _showFirstTab),
-              _buildTabButton('กำลังติดตาม', !_showFirstTab),
-            ],
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildTabButton('โพสต์ของฉัน', _showFirstTab),
+            _buildTabButton('กำลังติดตาม', !_showFirstTab),
+          ],
         ),
         // Divider
-        Container(
-          child: Divider(
-            color: Color(0xFFACACAC),
-            thickness: 1.5,
-            endIndent: 60,
-            height: 1,
-          ),
+        Divider(
+          color: Color(0xFFACACAC),
+          thickness: 1.5,
+          endIndent: 60,
+          height: 1,
         ),
         // Content
         Container(
@@ -327,7 +321,7 @@ class ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildFollowingContent() {
-    return Container(
+    return SizedBox(
       height: 200, // Give it some height
       child: Center(
         child: Text('กำลังติดตาม content', style: TextStyle(fontSize: 16)),
