@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:ruam_mit_application/pages/home_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // for jsonDecode
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'login_page.dart';
 import 'bottomNav.dart';
 
 class LoginPage extends StatefulWidget {

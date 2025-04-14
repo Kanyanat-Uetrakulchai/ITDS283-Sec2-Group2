@@ -125,7 +125,7 @@ router.post('/api/login', function (req, res) {
 router.post('/api/posts', upload.array('images', 4), (req, res) => {
     const {
       caption,
-      detail,       // this is the post body
+      detail,
       mij_bank,
       mij_bankno,
       mij_name,
@@ -182,6 +182,37 @@ router.post('/api/posts', upload.array('images', 4), (req, res) => {
       });
     });
   });
+  
+router.post('/react', async (req, res) => {
+    const { post_id, user_id, reaction } = req.body; // reaction can be 'like', 'unlike', or empty
+  
+    const [existing] = await Connection.promise().query(
+      'SELECT reaction FROM Likes WHERE postId = ? AND uid = ?',
+      [post_id, user_id]
+    );
+  
+    if (!reaction || (existing.length && existing[0].reaction === reaction)) {
+      // Toggle off: delete the row
+    await Connection.promise().query(
+        'DELETE FROM Likes WHERE postId = ? AND uid = ?',
+        [post_id, user_id]
+      );
+    } else if (existing.length) {
+      // Change reaction
+    await Connection.promise().query(
+        'UPDATE Likes SET reaction = ? WHERE postId = ? AND uid = ?',
+        [reaction, post_id, user_id]
+      );
+    } else {
+      // New reaction
+    await Connection.promise().query(
+        'INSERT INTO Likes (postId, uid, reaction) VALUES (?, ?, ?)',
+        [post_id, user_id, reaction]
+      );
+    }
+  
+    res.json({ success: true });
+});
   
 
 /* Bind server เข้ากับ Port ที่กำหนด */

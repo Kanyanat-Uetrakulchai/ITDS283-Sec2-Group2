@@ -38,15 +38,15 @@ create table if not exists Tags(
 );
 
 create table if not exists Likes(
-	postId			int,
-    uid				int,
-    status			boolean,
+	postId			int				not null,
+    uid				int				not null,
+    reaction		ENUM('like', 'unlike')		not null,
     constraint		PK_likes 		primary key (postId, uid),
     constraint		FK_likes_p		foreign key (postId) references Post(postId),
     constraint		FK_likes_u		foreign key (uid) references Users(uid)
 );
 
-create table Comments(
+create table if not exists Comments(
 	commId			int				not null	auto_increment,
     postId			int,
     uid				int,
@@ -59,6 +59,15 @@ create table Comments(
     constraint 		PK_comm 		primary key (commid),
     constraint		FK_comm_p		foreign key (postId) references Post(postId),
     constraint		FK_comm_u		foreign key (uid) references Users(uid)
+);
+
+create table if not exists Follow(
+	postId			int 		not null,
+    uid				int			not null,
+    f_timestamp		datetime,
+    constraint		PK_fol		primary key (postId, uid),
+    constraint		FK_fol_p	foreign key (postId) references Post(postId),
+    constraint		FK_fol_u	foreign key (uid) references Users(uid)
 );
 
 -- first post has to specify to initiate autoincrement
@@ -92,9 +101,13 @@ insert into tags values
     ('fandom', 2);
 
 insert into Likes values
-	(1, 1000002, true);
+	(1, 1000002, 'like'),
+    (3, 1000002, 'unlike');
 
-select * from Post;
+insert into Follow values
+	(1, 1000002, '2025-04-08 20:20:20');
+
+select * from Likes;
 
 -- fetch posts by tag
 select p.* from post p inner join tags t on p.postId = t.postId where t.tag = 'tag';
