@@ -37,7 +37,7 @@ class ProfilePageState extends State<ProfilePage> {
 
     try {
       final response = await http.get(
-        Uri.parse('$url/api/post/profile/${widget.uid}'),
+        Uri.parse('$url/api/profile/post/${widget.uid}'),
       );
 
       if (response.statusCode == 200) {
