@@ -107,72 +107,88 @@ class ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Icon(Icons.chevron_left),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Banner section
-            Container(
-              height: 180,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                // Banner section
+                Container(
+                  height: 180,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/profile_banner.png'),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                // Profile section
+                Container(
+                  transform: Matrix4.translationValues(25.0, -55.0, 0.0),
+                  child: Column(
+                    children: [
+                      // Profile avatar
+                      Container(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              radius: 55,
+                              backgroundColor: Colors.white,
+                              child: CircleAvatar(
+                                radius: 50,
+                                backgroundColor: Color(0xFFD63939),
+                                child:
+                                    _userData.isNotEmpty
+                                        ? Text(
+                                          _userData['username']
+                                                  ?.toString()
+                                                  .substring(0, 1)
+                                                  .toUpperCase() ??
+                                              'U',
+                                          style: TextStyle(
+                                            fontSize: 24,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                        : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // User info
+                      if (_userData.isNotEmpty) _buildUserInfo(),
+                      // Tab and content section
+                      SizedBox(height: 10),
+                      _buildContentSection(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Fixed position back button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 10,
+            left: 10,
+            child: Container(
               decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/profile_banner.png'),
-                  fit: BoxFit.cover,
+                shape: BoxShape.circle,
+                color: Colors.black.withOpacity(0.5),
+              ),
+              child: IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
                 ),
               ),
             ),
-            // Profile section
-            Container(
-              transform: Matrix4.translationValues(25.0, -55.0, 0.0),
-              child: Column(
-                children: [
-                  // Profile avatar
-                  Container(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CircleAvatar(
-                          radius: 55,
-                          backgroundColor: Colors.white,
-                          child: CircleAvatar(
-                            radius: 50,
-                            backgroundColor: Color(0xFFD63939),
-                            child:
-                                _userData.isNotEmpty
-                                    ? Text(
-                                      _userData['username']
-                                              ?.toString()
-                                              .substring(0, 1)
-                                              .toUpperCase() ??
-                                          'U',
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                    : null,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // User info
-                  if (_userData.isNotEmpty) _buildUserInfo(),
-                  // Tab and content section
-                  SizedBox(height: 10),
-                  _buildContentSection(),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -236,7 +252,7 @@ class ProfilePageState extends State<ProfilePage> {
         Divider(
           color: Color(0xFFACACAC),
           thickness: 1.5,
-          endIndent: 60,
+          endIndent: 46.5,
           height: 1,
         ),
         // Content
