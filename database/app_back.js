@@ -219,21 +219,25 @@ router.post('/react', async (req, res) => {
 
 // POST /api/tags
 router.post('/api/tags', async (req, res) => {
-  console.log(req.body);
-  const { postId, uid, tags } = req.body;
+  const { postId, tags } = req.body;
 
-  if (!postId || !uid || !Array.isArray(tags)) {
+  if (!postId || !Array.isArray(tags)) {
     return res.status(400).json({ error: 'Invalid request body' });
   }
 
   try {
-    const values = tags.map(tag => [postId, uid, tag]);
-    await db.query('INSERT INTO tags (postId, uid, tag) VALUES ?', [values]);
+    const placeholders = tags.map(() => '(?, ?)').join(', ');
+    const values = tags.flatMap(tag => [postId, tag]);
+
+    await Connection.promise().query(`INSERT INTO Tags (postId, tag) VALUES ${placeholders}`, values);
+    console.log('Tags inserted');
     res.status(201).json({ message: 'Tags inserted' });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
+
 
 
   

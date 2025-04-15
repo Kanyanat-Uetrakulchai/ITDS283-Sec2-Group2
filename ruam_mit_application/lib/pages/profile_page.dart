@@ -6,8 +6,9 @@ import 'post_page.dart';
 
 class ProfilePage extends StatefulWidget {
   final int uid;
+  final VoidCallback? onBackToHome;
 
-  const ProfilePage({super.key, required this.uid});
+  const ProfilePage({super.key, required this.uid, this.onBackToHome});
 
   @override
   State<ProfilePage> createState() => ProfilePageState();
@@ -107,72 +108,106 @@ class ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Icon(Icons.chevron_left),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Banner section
-            Container(
-              height: 180,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/profile_banner.png'),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            // Profile section
-            Container(
-              transform: Matrix4.translationValues(25.0, -55.0, 0.0),
-              child: Column(
-                children: [
-                  // Profile avatar
-                  Container(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CircleAvatar(
-                          radius: 55,
-                          backgroundColor: Colors.white,
-                          child: CircleAvatar(
-                            radius: 50,
-                            backgroundColor: Color(0xFFD63939),
-                            child:
-                                _userData.isNotEmpty
-                                    ? Text(
-                                      _userData['username']
-                                              ?.toString()
-                                              .substring(0, 1)
-                                              .toUpperCase() ??
-                                          'U',
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                    : null,
-                          ),
-                        ),
-                      ],
+      // appBar: AppBar(
+      //   backgroundColor: Colors.transparent,
+      //   leading: IconButton(
+      //     onPressed: () {
+      //       Navigator.pop(context);
+      //     },
+      //     icon: Icon(Icons.chevron_left),
+      //   ),
+      // ),
+      // floatingActionButton: FloatingActionButtonLocation,
+      // Positioned(
+      //         top: 16,
+      //         left: 16,
+      //         child: FloatingActionButton(
+      //           onPressed: () {
+      //             Navigator.pop(context);
+      //           },
+      //           child: Icon(Icons.arrow_back),
+      //           mini: true, // optional: smaller size
+      //         ),
+      //       ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                // Banner section
+                Container(
+                  height: 180,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/profile_banner.png'),
+                      fit: BoxFit.cover,
                     ),
                   ),
-                  // User info
-                  if (_userData.isNotEmpty) _buildUserInfo(),
-                  // Tab and content section
-                  SizedBox(height: 10),
-                  _buildContentSection(),
-                ],
-              ),
+                ),
+                // Profile section
+                Container(
+                  transform: Matrix4.translationValues(25.0, -55.0, 0.0),
+                  child: Column(
+                    children: [
+                      // Profile avatar
+                      Container(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              radius: 55,
+                              backgroundColor: Colors.white,
+                              child: CircleAvatar(
+                                radius: 50,
+                                backgroundColor: Color(0xFFD63939),
+                                child:
+                                    _userData.isNotEmpty
+                                        ? Text(
+                                          _userData['username']
+                                                  ?.toString()
+                                                  .substring(0, 1)
+                                                  .toUpperCase() ??
+                                              'U',
+                                          style: TextStyle(
+                                            fontSize: 24,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                        : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // User info
+                      if (_userData.isNotEmpty) _buildUserInfo(),
+                      // Tab and content section
+                      SizedBox(height: 10),
+                      _buildContentSection(),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          Positioned(
+            top: 20,
+            left: 16,
+            child: FloatingActionButton(
+              onPressed: () {
+                if (widget.onBackToHome != null) {
+                  widget.onBackToHome!();
+                }
+                Navigator.pop(context);
+              },
+              child: Icon(Icons.arrow_back, color: Colors.white),
+              mini: true, // optional: smaller size
+              shape: CircleBorder(),
+              backgroundColor: Colors.black.withAlpha(100),
+              elevation: 0,
+            ),
+          ),
+        ],
       ),
     );
   }
