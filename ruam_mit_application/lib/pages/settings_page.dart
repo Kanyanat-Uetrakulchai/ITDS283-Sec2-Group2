@@ -42,15 +42,20 @@ class _SettingsPageState extends State<SettingsPage> {
             SizedBox(height: 10),
             Divider(color: Color(0xFFACACAC)),
             SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'แก้ไขรหัสผ่าน',
-                  style: TextStyle(fontSize: 20, fontFamily: 'Prompt'),
-                ),
-                Icon(Icons.arrow_forward_ios),
-              ],
+            GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, '/changepassword');
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'แก้ไขรหัสผ่าน',
+                    style: TextStyle(fontSize: 20, fontFamily: 'Prompt'),
+                  ),
+                  Icon(Icons.arrow_forward_ios),
+                ],
+              ),
             ),
             SizedBox(height: 10),
             Divider(color: Color(0xFFACACAC)),

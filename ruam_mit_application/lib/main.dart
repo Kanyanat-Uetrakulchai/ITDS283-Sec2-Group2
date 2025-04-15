@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ruam_mit_application/pages/bottomNav.dart';
+import 'package:ruam_mit_application/pages/editpassword_page.dart';
 import 'package:ruam_mit_application/pages/home_page.dart';
 import 'package:ruam_mit_application/pages/login_page.dart';
 // import 'package:ruam_mit_application/pages/home_page.dart';
@@ -34,6 +35,7 @@ class _MainAppState extends State<MainApp> {
         '/login': (context) => LoginPage(),
         '/newPost': (context) => NewpostPage(),
         '/settings': (context) => SettingsPage(),
+        '/changepassword': (context) => ChangePWPage(),
       },
     );
   }
