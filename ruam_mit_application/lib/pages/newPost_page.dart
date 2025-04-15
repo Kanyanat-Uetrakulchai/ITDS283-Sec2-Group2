@@ -105,6 +105,7 @@ class _NewpostPageState extends State<NewpostPage> {
         final responseBody = jsonDecode(response.body);
         print('response: $responseBody');
         final postId = responseBody['postId'];
+
         List<String> tags =
             tag
                 .split('#')
@@ -112,14 +113,18 @@ class _NewpostPageState extends State<NewpostPage> {
                 .where((t) => t.isNotEmpty)
                 .toList();
 
-        for (String t in tags) {
+        if (tags.isNotEmpty) {
           final tagUrl = Uri.parse('${dotenv.env['url']}/api/tags');
-          // print('$postId $uid $t');
-          await http.post(
+          final tagResponse = await http.post(
             tagUrl,
             headers: {"Content-Type": "application/json"},
-            body: jsonEncode({"postId": postId, "uid": uid, "tag": t}),
+            body: jsonEncode({
+              "postId": postId,
+              "tags": tags, // <-- sending as array
+            }),
           );
+
+          print('Tag response: ${tagResponse.statusCode} ${tagResponse.body}');
         }
 
         setState(() {

@@ -6,8 +6,9 @@ import 'post_page.dart';
 
 class ProfilePage extends StatefulWidget {
   final int uid;
+  final VoidCallback? onBackToHome;
 
-  const ProfilePage({super.key, required this.uid});
+  const ProfilePage({super.key, required this.uid, this.onBackToHome});
 
   @override
   State<ProfilePage> createState() => ProfilePageState();

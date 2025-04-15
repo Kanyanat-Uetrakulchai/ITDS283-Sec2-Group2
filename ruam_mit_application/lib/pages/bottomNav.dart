@@ -78,8 +78,15 @@ class _BottomnavState extends State<Bottomnav> {
             HomePage(key: _homeKey),
             SearchPage(),
             Container(), // for FAB
-            ProfilePage(uid: uid),
-            Container(), // for Settings
+            ProfilePage(
+              uid: uid,
+              onBackToHome: () {
+                setState(() {
+                  _selected_page = 0;
+                });
+              },
+            ),
+            Container(), // Settings
           ];
 
           return Scaffold(
