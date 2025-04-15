@@ -31,8 +31,6 @@ class HomePageState extends State<HomePage> {
     _getPopTags();
   }
 
-  // final url = dotenv.env['url'];
-
   Future<void> _refreshPosts() async {
     setState(() {
       _loading = true;

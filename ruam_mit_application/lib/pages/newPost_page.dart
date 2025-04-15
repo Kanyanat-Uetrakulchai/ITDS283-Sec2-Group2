@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -78,6 +78,9 @@ class _NewpostPageState extends State<NewpostPage> {
 
     final url = Uri.parse('${dotenv.env['url']}/api/posts');
 
+    DateTime now = DateTime.now();
+    String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+
     var request = http.MultipartRequest('POST', url);
     request.fields['caption'] = caption;
     request.fields['detail'] = post;
@@ -87,6 +90,7 @@ class _NewpostPageState extends State<NewpostPage> {
     request.fields['mij_acc'] = shopname;
     request.fields['mij_plat'] = order;
     request.fields['uid'] = uid?.toString() ?? '';
+    request.fields['p_timestamp'] = formattedDate;
 
     for (int i = 0; i < _selectedImages.length; i++) {
       request.files.add(

@@ -132,12 +132,13 @@ router.post('/api/posts', upload.array('images', 4), (req, res) => {
       mij_name,
       mij_acc,
       mij_plat,
-      uid
+      uid,
+      p_timestamp
     } = req.body;
   
     if (
       !caption || !detail || !mij_bank || !mij_bankno ||
-      !mij_name || !mij_acc || !mij_plat || !uid
+      !mij_name || !mij_acc || !mij_plat || !uid || !p_timestamp
     ) {
       return res.status(400).json({ error: true, message: 'Missing required fields' });
     }
@@ -152,9 +153,9 @@ router.post('/api/posts', upload.array('images', 4), (req, res) => {
   
     const sql = `
       INSERT INTO Post (
-        caption, detail, mij_bank, mij_bankno, mij_name, mij_acc, mij_plat, uid,
+        caption, detail, mij_bank, mij_bankno, mij_name, mij_acc, mij_plat, p_timestamp, uid,
         p_p1, p_p2, p_p3, p_p4
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
   
     const values = [
@@ -165,6 +166,7 @@ router.post('/api/posts', upload.array('images', 4), (req, res) => {
       mij_name,
       mij_acc,
       mij_plat,
+      p_timestamp,
       uid,
       imagePaths[0],
       imagePaths[1],
