@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -84,9 +86,7 @@ class _NewpostPageState extends State<NewpostPage> {
     request.fields['mij_name'] = name;
     request.fields['mij_acc'] = shopname;
     request.fields['mij_plat'] = order;
-    request.fields['uid'] =
-        uid?.toString() ??
-        ''; //Error: Future<int?> cannot be assigned to String
+    request.fields['uid'] = uid?.toString() ?? '';
 
     for (int i = 0; i < _selectedImages.length; i++) {
       request.files.add(
@@ -98,10 +98,31 @@ class _NewpostPageState extends State<NewpostPage> {
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
       if (response.statusCode == 201) {
+        final responseBody = jsonDecode(response.body);
+        print('response: $responseBody');
+        final postId = responseBody['postId'];
+        List<String> tags =
+            tag
+                .split('#')
+                .map((t) => t.trim())
+                .where((t) => t.isNotEmpty)
+                .toList();
+
+        for (String t in tags) {
+          final tagUrl = Uri.parse('${dotenv.env['url']}/api/tags');
+          // print('$postId $uid $t');
+          await http.post(
+            tagUrl,
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode({"postId": postId, "uid": uid, "tag": t}),
+          );
+        }
+
         setState(() {
           _responseMessage = "โพสต์สำเร็จ:\n${response.body}";
           _selectedImages.clear();
         });
+        Navigator.pop(context, postId);
       } else {
         setState(() {
           _responseMessage =

@@ -5,6 +5,7 @@ const path = require("path");
 const multer = require('multer');
 
 const app = express();
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 dotenv.config();
@@ -184,7 +185,7 @@ router.post('/api/posts', upload.array('images', 4), (req, res) => {
   });
   
 router.post('/react', async (req, res) => {
-    const { post_id, user_id, reaction } = req.body; // reaction can be 'like', 'unlike', or empty
+    const { post_id, user_id, reaction } = req.body; // reaction = 'like', 'unlike', or empty
   
     const [existing] = await Connection.promise().query(
       'SELECT reaction FROM Likes WHERE postId = ? AND uid = ?',
@@ -192,7 +193,7 @@ router.post('/react', async (req, res) => {
     );
   
     if (!reaction || (existing.length && existing[0].reaction === reaction)) {
-      // Toggle off: delete the row
+      // Toggle off: delete row
     await Connection.promise().query(
         'DELETE FROM Likes WHERE postId = ? AND uid = ?',
         [post_id, user_id]
@@ -211,8 +212,28 @@ router.post('/react', async (req, res) => {
       );
     }
   
-    res.json({ success: true });
+    res.json({ success: true});
 });
+
+// POST /api/tags
+router.post('/api/tags', async (req, res) => {
+  console.log(req.body);
+  const { postId, uid, tags } = req.body;
+
+  if (!postId || !uid || !Array.isArray(tags)) {
+    return res.status(400).json({ error: 'Invalid request body' });
+  }
+
+  try {
+    const values = tags.map(tag => [postId, uid, tag]);
+    await db.query('INSERT INTO tags (postId, uid, tag) VALUES ?', [values]);
+    res.status(201).json({ message: 'Tags inserted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
   
 
 /* Bind server เข้ากับ Port ที่กำหนด */

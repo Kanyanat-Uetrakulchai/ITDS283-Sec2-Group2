@@ -8,11 +8,17 @@ import 'post_bytag.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
   @override
-  State<HomePage> createState() => _HomePageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
+  void refreshPosts() {
+    _refreshPosts();
+  }
+
   List<Map<String, dynamic>> _posts = [];
   List<Map<String, dynamic>> _tags = [];
   bool _loading = false;

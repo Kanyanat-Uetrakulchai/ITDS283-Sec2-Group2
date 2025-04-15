@@ -3,6 +3,7 @@ import 'package:ruam_mit_application/pages/home_page.dart';
 import 'package:ruam_mit_application/pages/profile_page.dart';
 import 'package:ruam_mit_application/pages/search_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'post_page.dart';
 
 class Bottomnav extends StatefulWidget {
   const Bottomnav({super.key});
@@ -18,6 +19,7 @@ class _BottomnavState extends State<Bottomnav> {
   }
 
   late Future<int?> _uidFuture;
+  final GlobalKey<HomePageState> _homeKey = GlobalKey<HomePageState>();
 
   int _selected_page = 0;
 
@@ -73,15 +75,15 @@ class _BottomnavState extends State<Bottomnav> {
 
           // Update the profile page with the correct UID
           final _pages = [
-            HomePage(),
+            HomePage(key: _homeKey),
             SearchPage(),
-            HomePage(), // Temporary placeholder for "Add Post" button
-            ProfilePage(uid: uid), // Pass the correct UID to ProfilePage
-            HomePage(),
+            Container(), // for FAB
+            ProfilePage(uid: uid),
+            Container(), // for Settings
           ];
 
           return Scaffold(
-            body: IndexedStack(index: _selected_page, children: _pages),
+            body: _pages[_selected_page],
             bottomNavigationBar: BottomAppBar(
               height: 96,
               color: const Color(0xffD63939), // Red background
@@ -174,9 +176,25 @@ class _BottomnavState extends State<Bottomnav> {
           backgroundColor: Colors.white,
           shape: const CircleBorder(),
           elevation: 0,
-          onPressed: () {
-            Navigator.pushNamed(context, '/newPost');
-            print("to new post");
+          onPressed: () async {
+            final result = await Navigator.pushNamed(context, '/newPost');
+
+            // result = postId, returned from NewPostPage
+            if (result != null) {
+              // Navigate to Post Detail Page
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => PostPage(postId: result as int),
+                ),
+              );
+
+              // Refresh Home Page after returning from PostPage
+              _homeKey.currentState?.refreshPosts();
+              setState(() {
+                _selected_page = 0; // switch back to home tab
+              });
+            }
           },
           child: const Icon(Icons.add, color: Color(0xffD63939), size: 40),
         ),
