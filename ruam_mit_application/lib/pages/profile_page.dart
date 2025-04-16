@@ -27,7 +27,6 @@ class ProfilePageState extends State<ProfilePage> {
     super.initState();
     _fetchProfile();
     _fetchPost();
-    _fetchFollowingPosts();
   }
 
   final url = dotenv.env['url'];
