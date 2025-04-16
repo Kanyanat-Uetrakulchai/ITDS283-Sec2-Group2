@@ -3,6 +3,7 @@ import 'package:ruam_mit_application/pages/bottomNav.dart';
 import 'package:ruam_mit_application/pages/changepassword_page.dart';
 import 'package:ruam_mit_application/pages/home_page.dart';
 import 'package:ruam_mit_application/pages/login_page.dart';
+import 'package:ruam_mit_application/pages/register_page.dart';
 // import 'package:ruam_mit_application/pages/home_page.dart';
 // import 'pages/profile_page.dart';
 import 'pages/loading_page.dart';
@@ -36,6 +37,7 @@ class _MainAppState extends State<MainApp> {
         '/newPost': (context) => NewpostPage(),
         '/settings': (context) => SettingsPage(),
         '/changepassword': (context) => ChangePWPage(),
+        '/register': (context) => RegisterPage(),
       },
     );
   }
