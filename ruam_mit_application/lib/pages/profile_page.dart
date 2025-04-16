@@ -446,7 +446,10 @@ class ProfilePageState extends State<ProfilePage> {
 
   Widget _buildFollowingContent() {
     if (_followingPosts.isEmpty) {
-      return Center(child: Text('ยังไม่ได้ติดตามโพสต์ใด ๆ'));
+      return Container(
+        transform: Matrix4.translationValues(-25.0, 0.0, 0.0),
+        child: Center(child: Text('ยังไม่ได้ติดตามโพสต์ใด ๆ'))
+      );
     }
 
     return ListView.builder(
