@@ -39,12 +39,12 @@ class _RegisterPageState extends State<RegisterPage> {
           padding: const EdgeInsets.all(15),
           child: Column(
             children: [
-              _buildUserField(label: 'username', controller: _usernameController),
+              _buildUserField(label: 'ชื่อผู้ใช้งาน', controller: _usernameController),
               const SizedBox(height: 20),
-              _buildPasswordField(label: 'password', controller: _passwordController),
+              _buildPasswordField(label: 'รหัสผ่าน', controller: _passwordController),
               const SizedBox(height: 20),
               _buildPasswordField(
-                label: 'confirm password', 
+                label: 'ยืนยันรหัสผ่าน', 
                 controller: _confirmpasswordController,
                 isConfirmField: true,
               ),
@@ -52,7 +52,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
-                    'Passwords do not match',
+                    'รหัสผ่านไม่ตรงกัน โปรดกรอกใหม่อีกครั้ง',
                     style: TextStyle(
                       color: Colors.red,
                       fontFamily: 'Prompt',
@@ -67,7 +67,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                 ),
                 child: const Text(
-                  'Register',
+                  'ลงทะเบียน',
                   style: TextStyle(
                     color: Colors.white,
                     fontFamily: 'Prompt',
@@ -110,7 +110,7 @@ class _RegisterPageState extends State<RegisterPage> {
             child: TextFormField(
               controller: controller,
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 15),
                 border: InputBorder.none,
               ),
               style: const TextStyle(
@@ -119,7 +119,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter $label';
+                  return 'โปรดกรอก $label';
                 }
                 return null;
               },
@@ -160,7 +160,7 @@ class _RegisterPageState extends State<RegisterPage> {
               controller: controller,
               obscureText: true,
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 15),
                 border: InputBorder.none,
               ),
               style: const TextStyle(
@@ -169,7 +169,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter $label';
+                  return 'โปรดกรอก $label';
                 }
                 if (isConfirmField && value != _passwordController.text) {
                   setState(() {
