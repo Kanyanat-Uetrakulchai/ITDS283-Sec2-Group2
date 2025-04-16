@@ -319,6 +319,15 @@ app.post('/api/user/register', (req, res) => {
   );
 });
 
+// Update Password
+router.put('/api/user/:uid', function (req, res){
+  let uid = req.params.uid
+  let password = req.body.password
+  Connection.query('UPDATE Users SET password = ? WHERE uid = ?', [password, uid], function (error, results){
+      if (error) throw error;
+      return res.send({error: false, data: results, message: 'Password Update!'})
+  })
+});
   
 
 /* Bind server เข้ากับ Port ที่กำหนด */
