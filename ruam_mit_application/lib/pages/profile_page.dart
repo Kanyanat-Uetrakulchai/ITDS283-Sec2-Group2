@@ -25,22 +25,22 @@ class ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    _fetchProfileAndPosts();
+    _fetchProfile();
+    _fetchPost();
     _fetchFollowingPosts();
   }
 
   final url = dotenv.env['url'];
 
-  Future<void> _fetchProfileAndPosts() async {
+  Future<void> _fetchProfile() async {
     setState(() {
       _loading = true;
-      _posts = [];
       _userData = {};
     });
 
     try {
       final response = await http.get(
-        Uri.parse('$url/api/profile/post/${widget.uid}'),
+        Uri.parse('$url/api/user/${widget.uid}'),
       );
 
       if (response.statusCode == 200) {
@@ -48,10 +48,8 @@ class ProfilePageState extends State<ProfilePage> {
 
         if (jsonData['error'] == false) {
           setState(() {
-            _userData =
-                jsonData['user'] ??
-                (jsonData['data'].isNotEmpty ? jsonData['data'][0] : {});
-            _posts = jsonData['data'] ?? [];
+            _userData = (jsonData['data'].isNotEmpty ? jsonData['data'][0] : {});
+            print(_userData);
           });
         } else {
           setState(() {
@@ -73,6 +71,47 @@ class ProfilePageState extends State<ProfilePage> {
       });
     }
   }
+
+  Future<void> _fetchPost() async {
+    setState(() {
+      _loading = true;
+      _posts = [];
+    });
+
+    try {
+      final response = await http.get(
+        Uri.parse('$url/api/profile/post/${widget.uid}'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+
+        if (jsonData['error'] == false) {
+          setState(() {
+            _posts = jsonData['data'] ?? [];
+            print(_posts);
+          });
+        } else {
+          setState(() {
+            _statusMessage = jsonData['message'] ?? 'Failed to load data';
+          });
+        }
+      } else {
+        setState(() {
+          _statusMessage = 'Server error: ${response.statusCode}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _statusMessage = 'Connection error: $e';
+      });
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+
 
   Future<void> _fetchFollowingPosts() async {
     try {

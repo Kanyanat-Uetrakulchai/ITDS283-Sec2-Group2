@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart'; // Add this import
 
 class ChangePWPage extends StatefulWidget {
   const ChangePWPage({super.key});
@@ -16,18 +20,68 @@ class _ChangePWPageState extends State<ChangePWPage> {
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
+  bool _passwordsMatch = true;
+
+  // Add this function to get UID from shared preferences
+  Future<int?> _getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    print(prefs.getInt('uid'));
+    return prefs.getInt('uid');
+    
+  }
 
   Future<void> _changePassword() async {
-    setState(() => _isLoading = true);
-    
-    await Future.delayed(const Duration(seconds: 1));
-    
-    setState(() => _isLoading = false);
-    
-    if (mounted) {
+    if (_newpasswordController.text != _confirmpasswordController.text) {
+      setState(() => _passwordsMatch = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('เปลี่ยนรหัสผ่านสำเร็จ')),
+        const SnackBar(content: Text('รหัสผ่านใหม่ไม่ตรงกัน')),
       );
+      return;
+    }
+
+    setState(() {
+      _passwordsMatch = true;
+      _isLoading = true;
+    });
+
+    try {
+      final userId = await _getUserId();
+      if (userId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('ไม่พบข้อมูลผู้ใช้')),
+        );
+        return;
+      }
+
+      final Map<String, dynamic> requestBody = {
+        'password': _newpasswordController.text,
+      };
+
+      final response = await http.put(
+        Uri.parse('${dotenv.env['url']}/api/user/$userId'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('เปลี่ยนรหัสผ่านสำเร็จ')),
+        );
+        Navigator.pop(context);
+      } else {
+        final error = jsonDecode(response.body)['message'] ?? 'เปลี่ยนรหัสผ่านไม่สำเร็จ';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error)),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('เกิดข้อผิดพลาด: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
