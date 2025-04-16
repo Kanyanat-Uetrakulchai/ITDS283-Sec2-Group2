@@ -7,17 +7,25 @@ class PostReactionButtons extends StatefulWidget {
   final int postId;
   final int userId;
 
-  const PostReactionButtons({required this.postId, required this.userId});
+  const PostReactionButtons({
+    Key? key,
+    required this.postId,
+    required this.userId,
+  }) : super(key: key);
 
   @override
-  _PostReactionButtonsState createState() => _PostReactionButtonsState();
+  PostReactionButtonsState createState() => PostReactionButtonsState();
 }
 
-class _PostReactionButtonsState extends State<PostReactionButtons> {
+class PostReactionButtonsState extends State<PostReactionButtons> {
   String? currentReaction; // 'like', 'unlike', or null
   int likeCount = 0;
   int unlikeCount = 0;
   bool isLoading = false;
+
+  void fetchReaction() {
+    fetchCurrentReaction();
+  }
 
   @override
   void initState() {
@@ -89,40 +97,60 @@ class _PostReactionButtonsState extends State<PostReactionButtons> {
   @override
   Widget build(BuildContext context) {
     final netScore = likeCount - unlikeCount;
+    Color netScoreColor;
+
+    if (netScore > 0) {
+      netScoreColor = Colors.green; // Positive score
+    } else if (netScore < 0) {
+      netScoreColor = Colors.red; // Negative score
+    } else {
+      netScoreColor = Colors.grey; // Zero score
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Score: $netScore', style: TextStyle(fontSize: 16)),
-        Row(
-          children: [
-            IconButton(
-              icon: Icon(
-                Icons.thumb_up,
-                color: currentReaction == 'like' ? Colors.blue : Colors.grey,
+        Padding(
+          padding: const EdgeInsets.only(
+            left: 16.0,
+          ), // Add left padding to shift right
+          child: Row(
+            children: [
+              Text('$likeCount'),
+              IconButton(
+                icon: Icon(
+                  Icons.thumb_up,
+                  color: currentReaction == 'like' ? Colors.blue : Colors.grey,
+                ),
+                onPressed: isLoading ? null : () => _react('like'),
               ),
-              onPressed: isLoading ? null : () => _react('like'),
-            ),
-            Text('$likeCount'),
-            SizedBox(width: 10),
-            IconButton(
-              icon: Icon(
-                Icons.thumb_down,
-                color: currentReaction == 'unlike' ? Colors.red : Colors.grey,
-              ),
-              onPressed: isLoading ? null : () => _react('unlike'),
-            ),
-            Text('$unlikeCount'),
-            if (isLoading)
-              Padding(
-                padding: const EdgeInsets.only(left: 10),
-                child: SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+              Text(
+                '$netScore',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold, // Make the score bold
+                  color: netScoreColor, // Change the color based on score
                 ),
               ),
-          ],
+              IconButton(
+                icon: Icon(
+                  Icons.thumb_down,
+                  color: currentReaction == 'unlike' ? Colors.red : Colors.grey,
+                ),
+                onPressed: isLoading ? null : () => _react('unlike'),
+              ),
+              Text('$unlikeCount'),
+              if (isLoading)
+                Padding(
+                  padding: const EdgeInsets.only(left: 10),
+                  child: SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+            ],
+          ),
         ),
       ],
     );

@@ -18,6 +18,7 @@ class PostPage extends StatefulWidget {
 
 class _PostPageState extends State<PostPage> {
   final TextEditingController _comment = TextEditingController();
+  final GlobalKey<PostReactionButtonsState> _reactionKey = GlobalKey();
 
   int? _uid;
   Map<String, dynamic> _post = {};
@@ -72,6 +73,7 @@ class _PostPageState extends State<PostPage> {
       _uid = userId;
     });
     await _refreshPosts();
+    await _fetchFollowStatus();
   }
 
   Future<int?> getUID() async {
@@ -92,17 +94,16 @@ class _PostPageState extends State<PostPage> {
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
-        print('API Response: $jsonData'); // Debug print
 
         setState(() {
           _response = const JsonEncoder.withIndent('  ').convert(jsonData);
-          // Handle array response and get first post
           if (jsonData['data'] != null &&
               jsonData['data'] is List &&
               jsonData['data'].isNotEmpty) {
             _post = jsonData['data'][0] is Map ? jsonData['data'][0] : {};
           }
         });
+        _reactionKey.currentState?.fetchReaction();
       } else {
         setState(() {
           _response = 'Error: ${response.statusCode} - ${response.body}';
@@ -121,6 +122,66 @@ class _PostPageState extends State<PostPage> {
 
   Future<void> _createComment() async {
     final comment = _comment.text;
+  }
+
+  Future<void> _toggleFollowStatus() async {
+    if (_uid == null) return;
+
+    final followUrl = Uri.parse('$url/api/follow');
+    final unfollowUrl = Uri.parse('$url/api/unfollow');
+
+    try {
+      final response =
+          isFollowed
+              ? await http.delete(
+                unfollowUrl,
+                body: {
+                  'postId': widget.postId.toString(),
+                  'uid': _uid.toString(),
+                },
+              )
+              : await http.post(
+                followUrl,
+                headers: {"Content-Type": "application/json"},
+                body: jsonEncode({
+                  'postId': widget.postId,
+                  'uid': _uid,
+                  'f_timestamp': DateTime.now().toIso8601String(),
+                }),
+              );
+
+      if ((isFollowed && response.statusCode == 200) ||
+          (!isFollowed && response.statusCode == 201)) {
+        setState(() {
+          isFollowed = !isFollowed;
+        });
+      } else {
+        print('Error: ${response.statusCode}, ${response.body}');
+      }
+    } catch (e) {
+      print('Follow toggle exception: $e');
+    }
+  }
+
+  Future<void> _fetchFollowStatus() async {
+    if (_uid == null) return;
+
+    try {
+      final response = await http.get(
+        Uri.parse('$url/api/follow/status?postId=${widget.postId}&uid=$_uid'),
+      );
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        setState(() {
+          isFollowed = json['isFollowed'] == true;
+        });
+      } else {
+        print('Failed to fetch follow status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Exception fetching follow status: $e');
+    }
   }
 
   @override
@@ -195,6 +256,7 @@ class _PostPageState extends State<PostPage> {
                                 0.0,
                               ),
                               child: PostReactionButtons(
+                                key: _reactionKey,
                                 postId: widget.postId,
                                 userId: _uid!,
                               ),
@@ -293,14 +355,13 @@ class _PostPageState extends State<PostPage> {
       backgroundColor: const Color(0xffD63939),
       actions: [
         GestureDetector(
-          onTap: () {
-            setState(() {
-              isFollowed = !isFollowed;
-            });
+          onTap: () async {
+            await _toggleFollowStatus();
           },
           child: Container(
             height: 29,
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            margin: EdgeInsets.only(right: 16),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(40),
@@ -374,17 +435,3 @@ class _PostPageState extends State<PostPage> {
     );
   }
 }
-
-
-    // Scaffold(
-    //   appBar: AppBar(title: Text('Detail Page')),
-    //   body:
-    //       _uid == null
-    //           ? Center(child: CircularProgressIndicator())
-    //           : Column(
-    //             children: [
-    //               Center(child: Text('Received: $_response')),
-    //               PostReactionButtons(postId: widget.postId, userId: _uid!),
-    //             ],
-    //           ),
-    // );
