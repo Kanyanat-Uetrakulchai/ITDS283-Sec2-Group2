@@ -87,7 +87,7 @@ class _PostPageState extends State<PostPage> {
 
     try {
       var response = await http.get(
-        Uri.parse('$url/api/post/detail/${widget.postId}'),
+        Uri.parse('$url/api/post/detail//api/user/'),
       );
 
       if (response.statusCode == 200) {
