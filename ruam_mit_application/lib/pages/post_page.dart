@@ -28,6 +28,11 @@ class _PostPageState extends State<PostPage> {
 
   final url = dotenv.env['url'];
 
+  void _refreshPage() {
+    _loadUIDAndPosts();
+    _fetchFollowStatus();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -130,17 +135,15 @@ class _PostPageState extends State<PostPage> {
     final followUrl = Uri.parse('$url/api/follow');
     final unfollowUrl = Uri.parse('$url/api/unfollow');
 
+    // Optimistically update UI
+    setState(() {
+      isFollowed = !isFollowed;
+    });
+
     try {
       final response =
           isFollowed
-              ? await http.delete(
-                unfollowUrl,
-                body: {
-                  'postId': widget.postId.toString(),
-                  'uid': _uid.toString(),
-                },
-              )
-              : await http.post(
+              ? await http.post(
                 followUrl,
                 headers: {"Content-Type": "application/json"},
                 body: jsonEncode({
@@ -148,17 +151,30 @@ class _PostPageState extends State<PostPage> {
                   'uid': _uid,
                   'f_timestamp': DateTime.now().toIso8601String(),
                 }),
+              )
+              : await http.delete(
+                unfollowUrl,
+                body: {
+                  'postId': widget.postId.toString(),
+                  'uid': _uid.toString(),
+                },
               );
 
-      if ((isFollowed && response.statusCode == 200) ||
-          (!isFollowed && response.statusCode == 201)) {
+      if ((isFollowed && response.statusCode != 201) ||
+          (!isFollowed && response.statusCode != 200)) {
+        // If it failed, revert the UI
         setState(() {
           isFollowed = !isFollowed;
         });
-      } else {
         print('Error: ${response.statusCode}, ${response.body}');
+      } else {
+        // Optional: show success message here if you want
       }
     } catch (e) {
+      // Revert state on error
+      setState(() {
+        isFollowed = !isFollowed;
+      });
       print('Follow toggle exception: $e');
     }
   }
@@ -174,7 +190,7 @@ class _PostPageState extends State<PostPage> {
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
         setState(() {
-          isFollowed = json['isFollowed'] == true;
+          isFollowed = json['isFollowed'];
         });
       } else {
         print('Failed to fetch follow status: ${response.statusCode}');
@@ -357,6 +373,7 @@ class _PostPageState extends State<PostPage> {
         GestureDetector(
           onTap: () async {
             await _toggleFollowStatus();
+            _refreshPage();
           },
           child: Container(
             height: 29,
@@ -381,9 +398,9 @@ class _PostPageState extends State<PostPage> {
                     const SizedBox(width: 4),
                     Container(
                       transform: Matrix4.translationValues(0.0, -4.4, 0.0),
-                      child: const Text(
-                        'ติดตาม',
-                        style: TextStyle(
+                      child: Text(
+                        isFollowed ? 'เลิกติดตาม' : 'ติดตาม',
+                        style: const TextStyle(
                           color: Color(0xffD63939),
                           fontFamily: 'Prompt',
                           fontSize: 16.75,

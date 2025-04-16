@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'post_page.dart';
+import '../components/image_grid.dart';
 
 class ProfilePage extends StatefulWidget {
   final int uid;
@@ -22,6 +23,12 @@ class ProfilePageState extends State<ProfilePage> {
   bool _showFirstTab = true;
   List<dynamic> _followingPosts = [];
 
+  void _refreshPage() {
+    _fetchProfile();
+    _fetchPost();
+    _fetchFollowingPosts();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -39,16 +46,15 @@ class ProfilePageState extends State<ProfilePage> {
     });
 
     try {
-      final response = await http.get(
-        Uri.parse('$url/api/user/${widget.uid}'),
-      );
+      final response = await http.get(Uri.parse('$url/api/user/${widget.uid}'));
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
 
         if (jsonData['error'] == false) {
           setState(() {
-            _userData = (jsonData['data'].isNotEmpty ? jsonData['data'][0] : {});
+            _userData =
+                (jsonData['data'].isNotEmpty ? jsonData['data'][0] : {});
             print(_userData);
           });
         } else {
@@ -111,7 +117,6 @@ class ProfilePageState extends State<ProfilePage> {
       });
     }
   }
-
 
   Future<void> _fetchFollowingPosts() async {
     try {
@@ -428,7 +433,7 @@ class ProfilePageState extends State<ProfilePage> {
                   ),
                   Divider(color: Color(0xFFACACAC)),
                   SizedBox(height: 10),
-                  _buildImageGrid(post),
+                  ImageGrid(post: post),
                   SizedBox(height: 10),
                 ],
               ),
@@ -500,7 +505,7 @@ class ProfilePageState extends State<ProfilePage> {
                   ),
                   Divider(color: Color(0xFFACACAC)),
                   SizedBox(height: 10),
-                  _buildImageGrid(post),
+                  ImageGrid(post: post),
                 ],
               ),
             ),
@@ -508,119 +513,5 @@ class ProfilePageState extends State<ProfilePage> {
         );
       },
     );
-  }
-
-  Widget _buildImageGrid(Map<String, dynamic> post) {
-    List<String> imageFields = ['p_p1', 'p_p2', 'p_p3', 'p_p4'];
-    List<String> imageUrls =
-        imageFields
-            .map((key) => post[key])
-            .whereType<String>()
-            .where((url) => url.isNotEmpty)
-            .toList();
-
-    if (imageUrls.isEmpty) return SizedBox.shrink();
-
-    final baseUrl = dotenv.env['url']?.replaceFirst(RegExp(r'/$'), '') ?? '';
-
-    List<Widget> images =
-        imageUrls
-            .map(
-              (url) => ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  '$baseUrl$url',
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: 150,
-                  errorBuilder:
-                      (context, error, stackTrace) => Icon(Icons.broken_image),
-                ),
-              ),
-            )
-            .toList();
-
-    switch (images.length) {
-      case 1:
-        return images[0];
-      case 2:
-        return Row(
-          children:
-              images
-                  .map(
-                    (img) => Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          right: img != images.last ? 4 : 0,
-                        ),
-                        child: img,
-                      ),
-                    ),
-                  )
-                  .toList(),
-        );
-      case 3:
-        return Column(
-          children: [
-            images[0],
-            SizedBox(height: 4),
-            Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(right: 2),
-                    child: images[1],
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 2),
-                    child: images[2],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-      case 4:
-      default:
-        return Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(right: 2),
-                    child: images[0],
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 2),
-                    child: images[1],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 4),
-            Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(right: 2),
-                    child: images[2],
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 2),
-                    child: images[3],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-    }
   }
 }
