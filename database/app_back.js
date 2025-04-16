@@ -246,7 +246,47 @@ router.post('/api/tags', async (req, res) => {
   }
 });
 
+// Post New User Infomation
+app.post('/api/user/register', (req, res) => {
+  const { username, password } = req.body;
+  const joinDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
 
+  // Validate input
+  if (!username || !password) {
+    return res.status(400).json({ error: true, message: 'Username and password are required' });
+  }
+
+  // Check if username exists
+  Connection.query(
+    'SELECT * FROM Users WHERE username = ?', 
+    [username],
+    (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: true, message: 'Database error' });
+      }
+      
+      if (results.length > 0) {
+        return res.status(400).json({ error: true, message: 'Username already exists' });
+      }
+
+      // Insert new user
+      Connection.query(
+        'INSERT INTO Users (username, password, joinDate) VALUES (?, ?, ?)',
+        [username, password, joinDate],
+        (err, results) => {
+          if (err) {
+            return res.status(500).json({ error: 'Failed to register user' });
+          }
+          
+          res.status(201).json({ 
+            message: 'User registered successfully',
+            uid: results.insertId
+          });
+        }
+      );
+    }
+  );
+});
 
   
 
