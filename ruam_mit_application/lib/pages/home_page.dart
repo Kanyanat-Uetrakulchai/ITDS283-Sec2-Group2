@@ -117,110 +117,115 @@ class HomePageState extends State<HomePage> {
       body:
           _loading
               ? Center(child: CircularProgressIndicator())
-              : ListView(
-                padding: EdgeInsets.all(20),
-                children: [
-                  InkWell(
-                    onTap: () {
-                      _launchURL();
-                    },
-                    child: Image.asset('assets/police_banner.png'),
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    'แท็กยอดนิยม',
-                    style: TextStyle(
-                      fontFamily: 'Prompt',
-                      fontSize: 24,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  _poptags(),
-                  Divider(color: Color(0xFFACACAC)),
-                  SizedBox(height: 20),
-                  Text(
-                    'โพสต์ใหม่',
-                    style: TextStyle(
-                      fontFamily: 'Prompt',
-                      fontSize: 24,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  ..._posts.map((post) {
-                    return InkWell(
+              : RefreshIndicator(
+                onRefresh: () async {
+                  refreshPosts();
+                },
+                child: ListView(
+                  padding: EdgeInsets.all(20),
+                  children: [
+                    InkWell(
                       onTap: () {
-                        print('post ${post['postId']} clicked!');
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => PostPage(postId: post['postId']),
-                          ),
-                        );
+                        _launchURL();
                       },
-                      child: Card(
-                        color: Colors.white,
-                        elevation: 3,
-                        margin: EdgeInsets.symmetric(vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              InkWell(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) =>
-                                              ProfilePage(uid: post['uid']),
+                      child: Image.asset('assets/police_banner.png'),
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'แท็กยอดนิยม',
+                      style: TextStyle(
+                        fontFamily: 'Prompt',
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    _poptags(),
+                    Divider(color: Color(0xFFACACAC)),
+                    SizedBox(height: 20),
+                    Text(
+                      'โพสต์ใหม่',
+                      style: TextStyle(
+                        fontFamily: 'Prompt',
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    ..._posts.map((post) {
+                      return InkWell(
+                        onTap: () {
+                          print('post ${post['postId']} clicked!');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => PostPage(postId: post['postId']),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          color: Colors.white,
+                          elevation: 3,
+                          margin: EdgeInsets.symmetric(vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) =>
+                                                ProfilePage(uid: post['uid']),
+                                      ),
+                                    );
+                                  },
+                                  child: ListTile(
+                                    leading: CircleAvatar(
+                                      backgroundColor: Color(0xffD63939),
+                                      child: Text(
+                                        post['username']
+                                                ?.toString()
+                                                .substring(0, 1)
+                                                .toUpperCase() ??
+                                            '?',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
                                     ),
-                                  );
-                                },
-                                child: ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: Color(0xffD63939),
-                                    child: Text(
-                                      post['username']
-                                              ?.toString()
-                                              .substring(0, 1)
-                                              .toUpperCase() ??
-                                          '?',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
 
-                                  title: Text(post['username'].toString()),
-                                  trailing: Text(
-                                    post['p_timestamp'].toString().split(
-                                      'T',
-                                    )[0],
+                                    title: Text(post['username'].toString()),
+                                    trailing: Text(
+                                      post['p_timestamp'].toString().split(
+                                        'T',
+                                      )[0],
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Divider(color: Color(0xFFACACAC)),
-                              SizedBox(height: 6),
-                              Text(
-                                post['caption'] ?? '',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                                Divider(color: Color(0xFFACACAC)),
+                                SizedBox(height: 6),
+                                Text(
+                                  post['caption'] ?? '',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(height: 10),
-                              ImageGrid(post: post),
-                            ],
+                                SizedBox(height: 10),
+                                ImageGrid(post: post),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  }).toList(),
-                ],
+                      );
+                    }).toList(),
+                  ],
+                ),
               ),
     );
   }

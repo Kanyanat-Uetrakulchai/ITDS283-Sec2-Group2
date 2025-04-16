@@ -12,7 +12,7 @@ class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key, required this.uid, this.onBackToHome});
 
   @override
-  State<ProfilePage> createState() => ProfilePageState();
+  ProfilePageState createState() => ProfilePageState();
 }
 
 class ProfilePageState extends State<ProfilePage> {
@@ -23,7 +23,7 @@ class ProfilePageState extends State<ProfilePage> {
   bool _showFirstTab = true;
   List<dynamic> _followingPosts = [];
 
-  void _refreshPage() {
+  Future<void> _refreshPage() async {
     _fetchProfile();
     _fetchPost();
     _fetchFollowingPosts();
@@ -174,63 +174,67 @@ class ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       body: Stack(
         children: [
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                // Banner section
-                Container(
-                  height: 180,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/profile_banner.png'),
-                      fit: BoxFit.cover,
+          RefreshIndicator(
+            onRefresh: _refreshPage,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                children: [
+                  // Banner section
+                  Container(
+                    height: 180,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('assets/profile_banner.png'),
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                ),
-                // Profile section
-                Container(
-                  transform: Matrix4.translationValues(25.0, -55.0, 0.0),
-                  child: Column(
-                    children: [
-                      // Profile avatar
-                      Container(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CircleAvatar(
-                              radius: 55,
-                              backgroundColor: Colors.white,
-                              child: CircleAvatar(
-                                radius: 50,
-                                backgroundColor: Color(0xFFD63939),
-                                child:
-                                    _userData.isNotEmpty
-                                        ? Text(
-                                          _userData['username']
-                                                  ?.toString()
-                                                  .substring(0, 1)
-                                                  .toUpperCase() ??
-                                              'U',
-                                          style: TextStyle(
-                                            fontSize: 24,
-                                            color: Colors.white,
-                                          ),
-                                        )
-                                        : null,
+                  // Profile section
+                  Container(
+                    transform: Matrix4.translationValues(25.0, -55.0, 0.0),
+                    child: Column(
+                      children: [
+                        // Profile avatar
+                        Container(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CircleAvatar(
+                                radius: 55,
+                                backgroundColor: Colors.white,
+                                child: CircleAvatar(
+                                  radius: 50,
+                                  backgroundColor: Color(0xFFD63939),
+                                  child:
+                                      _userData.isNotEmpty
+                                          ? Text(
+                                            _userData['username']
+                                                    ?.toString()
+                                                    .substring(0, 1)
+                                                    .toUpperCase() ??
+                                                'U',
+                                            style: TextStyle(
+                                              fontSize: 24,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                          : null,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      // User info
-                      if (_userData.isNotEmpty) _buildUserInfo(),
-                      // Tab and content section
-                      SizedBox(height: 10),
-                      _buildContentSection(),
-                    ],
+                        // User info
+                        if (_userData.isNotEmpty) _buildUserInfo(),
+                        // Tab and content section
+                        SizedBox(height: 10),
+                        _buildContentSection(),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           // Fixed position back button
@@ -448,7 +452,7 @@ class ProfilePageState extends State<ProfilePage> {
     if (_followingPosts.isEmpty) {
       return Container(
         transform: Matrix4.translationValues(-25.0, 0.0, 0.0),
-        child: Center(child: Text('ยังไม่ได้ติดตามโพสต์ใด ๆ'))
+        child: Center(child: Text('ยังไม่ได้ติดตามโพสต์ใด ๆ')),
       );
     }
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:ruam_mit_application/pages/profile_page.dart' show ProfilePage;
+import 'package:ruam_mit_application/pages/profile_page.dart';
 import '../components/Likes.dart';
 import '../components/image_grid.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -168,7 +168,7 @@ class _PostPageState extends State<PostPage> {
         });
         print('Error: ${response.statusCode}, ${response.body}');
       } else {
-        // Optional: show success message here if you want
+        //
       }
     } catch (e) {
       // Revert state on error
@@ -218,113 +218,117 @@ class _PostPageState extends State<PostPage> {
                   ],
                 ),
               )
-              : SingleChildScrollView(
-                child: Column(
-                  children: [
-                    ownerPostInfo(context),
-                    Container(
-                      transform: Matrix4.translationValues(0.0, -30.0, 0.0),
-                      padding: const EdgeInsets.all(28),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _post['caption'] ?? 'No caption',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontFamily: 'Prompt',
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          _buildInfoRow('ธนาคาร', _post['mij_bank']),
-                          _buildInfoRow('เลขบัญชี', _post['mij_bankno']),
-                          _buildInfoRow(
-                            'ชื่อนามสกุลมิจฉาชีพ',
-                            _post['mij_name'],
-                          ),
-                          _buildInfoRow(
-                            'ชื่อร้าน / บัญชีผู้ใช้',
-                            _post['mij_acc'],
-                          ),
-                          _buildInfoRow(
-                            'ช่องทางการสั่งซื้อ',
-                            _post['mij_plat'],
-                          ),
-                          Divider(thickness: 2),
-                          SizedBox(height: 5),
-                          Text(
-                            _post['detail'] ?? 'No details',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontFamily: 'Prompt',
-                            ),
-                          ),
-                          SizedBox(height: 5),
-                          ImageGrid(post: _post),
-                          SizedBox(height: 5),
-                          Divider(thickness: 2),
-                          if (_uid != null)
-                            Container(
-                              transform: Matrix4.translationValues(
-                                -10.0,
-                                0.0,
-                                0.0,
-                              ),
-                              child: PostReactionButtons(
-                                key: _reactionKey,
-                                postId: widget.postId,
-                                userId: _uid!,
+              : RefreshIndicator(
+                onRefresh: _refreshPosts, // or any refresh method
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Column(
+                    children: [
+                      ownerPostInfo(context),
+                      Container(
+                        transform: Matrix4.translationValues(0.0, -30.0, 0.0),
+                        padding: const EdgeInsets.all(28),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _post['caption'] ?? 'No caption',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontFamily: 'Prompt',
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                          Text(
-                            'ความคิดเห็น',
-                            style: TextStyle(
-                              fontFamily: 'Prompt',
-                              fontSize: 20,
+                            const SizedBox(height: 10),
+                            _buildInfoRow('ธนาคาร', _post['mij_bank']),
+                            _buildInfoRow('เลขบัญชี', _post['mij_bankno']),
+                            _buildInfoRow(
+                              'ชื่อนามสกุลมิจฉาชีพ',
+                              _post['mij_name'],
                             ),
-                          ),
-                          SizedBox(height: 10),
-                          Container(
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: Color(0xFFD9D9D9),
-                              border: Border.all(color: Color(0xFFD9D9D9)),
-                              borderRadius: BorderRadius.circular(20),
+                            _buildInfoRow(
+                              'ชื่อร้าน / บัญชีผู้ใช้',
+                              _post['mij_acc'],
                             ),
-                            child: TextField(
-                              onSubmitted: (value) {
-                                setState(() {
-                                  _createComment();
-                                });
-                              },
-                              controller: _comment,
-                              maxLines: 1,
-                              decoration: InputDecoration(
-                                contentPadding: EdgeInsets.fromLTRB(
-                                  15,
-                                  0,
-                                  15,
-                                  10,
+                            _buildInfoRow(
+                              'ช่องทางการสั่งซื้อ',
+                              _post['mij_plat'],
+                            ),
+                            Divider(thickness: 2),
+                            SizedBox(height: 5),
+                            Text(
+                              _post['detail'] ?? 'No details',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontFamily: 'Prompt',
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            ImageGrid(post: _post),
+                            SizedBox(height: 5),
+                            Divider(thickness: 2),
+                            if (_uid != null)
+                              Container(
+                                transform: Matrix4.translationValues(
+                                  -10.0,
+                                  0.0,
+                                  0.0,
                                 ),
-                                border: InputBorder.none,
-                                hintText: 'แสดงความคิดเห็น . . .',
-                                hintStyle: TextStyle(
-                                  fontFamily: 'Prompt',
-                                  fontSize: 16,
-                                  color: Color(0xFF4F4F4F),
+                                child: PostReactionButtons(
+                                  key: _reactionKey,
+                                  postId: widget.postId,
+                                  userId: _uid!,
                                 ),
                               ),
+                            Text(
+                              'ความคิดเห็น',
                               style: TextStyle(
                                 fontFamily: 'Prompt',
-                                fontSize: 16,
+                                fontSize: 20,
                               ),
                             ),
-                          ),
-                        ],
+                            SizedBox(height: 10),
+                            Container(
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Color(0xFFD9D9D9),
+                                border: Border.all(color: Color(0xFFD9D9D9)),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: TextField(
+                                onSubmitted: (value) {
+                                  setState(() {
+                                    _createComment();
+                                  });
+                                },
+                                controller: _comment,
+                                maxLines: 1,
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.fromLTRB(
+                                    15,
+                                    0,
+                                    15,
+                                    10,
+                                  ),
+                                  border: InputBorder.none,
+                                  hintText: 'แสดงความคิดเห็น . . .',
+                                  hintStyle: TextStyle(
+                                    fontFamily: 'Prompt',
+                                    fontSize: 16,
+                                    color: Color(0xFF4F4F4F),
+                                  ),
+                                ),
+                                style: TextStyle(
+                                  fontFamily: 'Prompt',
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
     );
