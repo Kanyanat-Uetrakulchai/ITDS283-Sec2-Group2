@@ -92,6 +92,37 @@ router.get('/api/user/:uid', function (req, res){
     })
 });
 
+router.get('/api/reaction', function (req, res) {
+  const postId = req.query.post_id;
+  const userId = req.query.user_id;
+
+  if (!postId || !userId) {
+    return res.status(400).send({ error: true, message: "Missing post_id or user_id" });
+  }
+
+  const sql = `
+    SELECT 
+      (SELECT COUNT(*) FROM Likes WHERE postId = ?) AS likes,
+      (SELECT COUNT(*) FROM Likes WHERE postId = ? AND reaction = 'unlike') AS unlikes,
+      (SELECT reaction FROM Likes WHERE postId = ? AND uid = ?) AS reaction
+  `;
+
+  Connection.query(sql, [postId, postId, postId, userId], function (error, results) {
+    if (error) {
+      console.error(error);
+      return res.status(500).send({ error: true, message: "Database error" });
+    }
+
+    const row = results[0];
+    res.send({
+      error: false,
+      likes: row.likes,
+      unlikes: row.unlikes,
+      reaction: row.reaction || null
+    });
+  });
+});
+
 router.post('/api/login', function (req, res) {
     const { username, password } = req.body;
 

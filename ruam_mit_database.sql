@@ -107,7 +107,7 @@ insert into Likes values
 insert into Follow values
 	(1, 1000002, '2025-04-08 20:20:20');
 
-select * from Likes;
+select * from Tags;
 
 -- fetch posts by tag
 select p.* from post p inner join tags t on p.postId = t.postId where t.tag = 'tag';
@@ -119,3 +119,5 @@ select * from post p inner join users u on p.uid = u.uid;
 
 -- fetch number of post by tag
 select t.tag, count(p.postId) from post p right join tags t on p.postId = t.postId group by t.tag order by count(p.postId) desc limit 4;
+
+-- INSERT INTO Tags (postId, tag) VALUES (1, 'test');
