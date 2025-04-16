@@ -20,12 +20,14 @@ class ProfilePageState extends State<ProfilePage> {
   Map<String, dynamic> _userData = {};
   String _statusMessage = "";
   bool _showFirstTab = true;
+  List<dynamic> _followingPosts = [];
 
   @override
   void initState() {
     super.initState();
     _fetchProfile();
     _fetchPost();
+    _fetchFollowingPosts();
   }
 
   final url = dotenv.env['url'];
@@ -109,7 +111,6 @@ class ProfilePageState extends State<ProfilePage> {
       });
     }
   }
-
 
   String formatThaiDate(dynamic timestamp) {
     try {
@@ -219,12 +220,12 @@ class ProfilePageState extends State<ProfilePage> {
               ),
               child: IconButton(
                 onPressed: () {
+                  if (widget.onBackToHome != null) {
+                    widget.onBackToHome!();
+                  }
                   Navigator.pop(context);
                 },
-                icon: Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                ),
+                icon: Icon(Icons.arrow_back, color: Colors.white),
               ),
             ),
           ),
@@ -420,11 +421,73 @@ class ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildFollowingContent() {
-    return SizedBox(
-      height: 200, // Give it some height
-      child: Center(
-        child: Text('กำลังติดตาม content', style: TextStyle(fontSize: 16)),
-      ),
+    if (_followingPosts.isEmpty) {
+      return Center(child: Text('ยังไม่ได้ติดตามโพสต์ใด ๆ'));
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: _followingPosts.length,
+      itemBuilder: (context, index) {
+        final post = _followingPosts[index];
+        return InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PostPage(postId: post['postId']),
+              ),
+            );
+          },
+          child: Card(
+            margin: EdgeInsets.only(left: 0, right: 46, top: 8, bottom: 8),
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            color: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Color(0xffD63939),
+                      child: Text(
+                        post['username']
+                                ?.toString()
+                                .substring(0, 1)
+                                .toUpperCase() ??
+                            '?',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    title: Text(post['username'] ?? ''),
+                    trailing: Text(
+                      post['p_timestamp'].toString().split('T')[0],
+                    ),
+                  ),
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      post['caption'] ?? '',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  Divider(color: Color(0xFFACACAC)),
+                  SizedBox(height: 10),
+                  _buildImageGrid(post),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

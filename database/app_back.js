@@ -102,7 +102,7 @@ router.get('/api/reaction', function (req, res) {
 
   const sql = `
     SELECT 
-      (SELECT COUNT(*) FROM Likes WHERE postId = ?) AS likes,
+      (SELECT COUNT(*) FROM Likes WHERE postId = ? AND reaction = 'like') AS likes,
       (SELECT COUNT(*) FROM Likes WHERE postId = ? AND reaction = 'unlike') AS unlikes,
       (SELECT reaction FROM Likes WHERE postId = ? AND uid = ?) AS reaction
   `;
@@ -112,7 +112,7 @@ router.get('/api/reaction', function (req, res) {
       console.error(error);
       return res.status(500).send({ error: true, message: "Database error" });
     }
-
+    console.log(results)
     const row = results[0];
     res.send({
       error: false,
@@ -319,6 +319,81 @@ app.post('/api/user/register', (req, res) => {
   );
 });
 
+router.get('/api/follow/status', async (req, res) => {
+  const { postId, uid } = req.query;
+  Connection.query(
+    'SELECT COUNT(*) as count FROM Follow WHERE postId = ? AND uid = ?',
+    [postId, uid],
+    (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      const isFollowed = results[0].count > 0;
+      res.json({ isFollowed });
+    }
+  );
+});
+
+
+router.post('/api/follow', function (req, res){
+  const { postId, uid, f_timestamp } = req.body;
+  Connection.query('INSERT INTO Follow (postId, uid, f_timestamp) VALUES (?, ?, ?)',[postId, uid, f_timestamp], function (error, results){
+    (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: 'Failed to follow' });
+      }
+      
+      res.status(201).json({ 
+        message: 'Followed post successfully'
+      });
+    }
+  })
+});
+
+router.delete('/api/unfollow', function (req, res){
+  const { postId, uid } = req.body;
+  Connection.query('DELETE FROM Follow WHERE postId = ? AND uid = ?',[postId, uid], function (error, results){
+    (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: 'Failed to unfollow' });
+      }
+      
+      res.status(201).json({ 
+        message: 'Unfollowed post successfully'
+      });
+    }
+  })
+});
+
+app.get('/api/following/posts/:uid', (req, res) => {
+  const uid = req.params.uid;
+
+  if (!uid) {
+    return res.status(400).json({ error: 'Missing uid' });
+  }
+
+  const sql = `
+    SELECT 
+      p.*, u.username 
+    FROM Follow f
+    INNER JOIN Post p ON f.postId = p.postId 
+    INNER JOIN Users u ON p.uid = u.uid 
+    WHERE f.uid = ? 
+    ORDER BY p.p_timestamp DESC
+  `;
+
+  Connection.query(sql, [uid], (err, results) => {
+    if (err) {
+      console.error('DB Error:', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    res.json({ error: false, data: results });
+  });
+});
+
+
 // Update Password
 router.put('/api/user/:uid', function (req, res){
   let uid = req.params.uid
@@ -328,7 +403,6 @@ router.put('/api/user/:uid', function (req, res){
       return res.send({error: false, data: results, message: 'Password Update!'})
   })
 });
-  
 
 /* Bind server เข้ากับ Port ที่กำหนด */
 app.listen(process.env.PORT, () => {
