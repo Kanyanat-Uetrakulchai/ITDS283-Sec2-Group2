@@ -32,7 +32,7 @@ class _PostReactionButtonsState extends State<PostReactionButtons> {
     try {
       final response = await http.get(
         Uri.parse(
-          '/reaction?post_id=${widget.postId}&user_id=${widget.userId}',
+          '${dotenv.env['url']}/api/reaction?post_id=${widget.postId}&user_id=${widget.userId}',
         ),
       );
 
