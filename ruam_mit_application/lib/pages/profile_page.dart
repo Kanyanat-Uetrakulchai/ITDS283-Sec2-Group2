@@ -27,6 +27,7 @@ class ProfilePageState extends State<ProfilePage> {
     super.initState();
     _fetchProfile();
     _fetchPost();
+    _fetchFollowingPosts();
   }
 
   final url = dotenv.env['url'];
@@ -108,6 +109,25 @@ class ProfilePageState extends State<ProfilePage> {
       setState(() {
         _loading = false;
       });
+    }
+  }
+
+
+  Future<void> _fetchFollowingPosts() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$url/api/following/posts/${widget.uid}'),
+      );
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        if (jsonData['error'] == false) {
+          setState(() {
+            _followingPosts = jsonData['data'] ?? [];
+          });
+        }
+      }
+    } catch (e) {
+      print('Error loading followed posts: $e');
     }
   }
 
