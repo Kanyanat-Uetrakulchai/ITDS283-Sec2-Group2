@@ -404,6 +404,78 @@ router.put('/api/user/:uid', function (req, res){
   })
 });
 
+router.post('/api/comment',upload.array('images', 4), (req, res) => {
+  const { postId, uid, message, c_timestamp } = req.body;
+
+  // Ensure required fields are provided
+  if (!postId || !uid || !message || !c_timestamp) {
+    return res.status(400).json({ error: true, message: 'Missing required fields' });
+  }
+
+  // Store up to 4 image paths
+  const imagePaths = Array(4).fill(null);
+  if (req.files && req.files.length > 0) {
+    req.files.forEach((file, i) => {
+      if (i < 4) imagePaths[i] = `/uploads/${file.filename}`;
+    });
+  }
+
+  const sql = `
+    INSERT INTO Comments (
+      postId, uid, message, c_timestamp,
+      c_p1, c_p2, c_p3, c_p4
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const values = [
+    postId,
+    uid,
+    message,
+    c_timestamp,
+    imagePaths[0],
+    imagePaths[1],
+    imagePaths[2],
+    imagePaths[3]
+  ];
+  
+  // Execute the SQL query
+  Connection.execute(sql, values, (err, results) => {
+    if (err) return res.status(500).json({ error: true, message: err.message });
+
+    // Respond with success and the comment's details
+    res.status(201).json({
+      success: true,
+      message: 'Comment submitted successfully',
+      commentId: results.insertId,
+      imagePaths
+    });
+  });
+});
+
+router.get('/api/comment/:postId', async (req, res) => {
+  const { postId } = req.params;
+  const sql = `
+    SELECT c.*, u.username
+    FROM Comments c
+    JOIN Users u ON c.uid = u.uid
+    WHERE c.postId = ?
+    ORDER BY c.c_timestamp DESC
+  `;
+  try {
+    const [results] = await Connection.promise().query(sql, [postId]);
+    // prepend domain if needed
+    const comments = results.map(comment => ({
+      ...comment,
+      image_url: comment.image_url
+        ? `${process.env.DOMAIN || 'http://localhost:3000'}${comment.image_url}`
+        : null
+    }));
+    res.json({ data: comments });
+  } catch (err) {
+    res.status(500).json({ error: 'Error fetching comments' });
+  }
+});
+
 /* Bind server เข้ากับ Port ที่กำหนด */
 app.listen(process.env.PORT, () => {
     console.log(`Server listening on port: ${process.env.PORT}`);

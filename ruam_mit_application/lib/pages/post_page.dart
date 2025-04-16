@@ -6,6 +6,7 @@ import 'package:ruam_mit_application/pages/profile_page.dart';
 import '../components/Likes.dart';
 import '../components/image_grid.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../components/commentSec.dart';
 
 class PostPage extends StatefulWidget {
   final int postId;
@@ -287,43 +288,8 @@ class _PostPageState extends State<PostPage> {
                                 fontSize: 20,
                               ),
                             ),
+                            CommentSection(postId: widget.postId, uid: _uid!),
                             SizedBox(height: 10),
-                            Container(
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: Color(0xFFD9D9D9),
-                                border: Border.all(color: Color(0xFFD9D9D9)),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: TextField(
-                                onSubmitted: (value) {
-                                  setState(() {
-                                    _createComment();
-                                  });
-                                },
-                                controller: _comment,
-                                maxLines: 1,
-                                decoration: InputDecoration(
-                                  contentPadding: EdgeInsets.fromLTRB(
-                                    15,
-                                    0,
-                                    15,
-                                    10,
-                                  ),
-                                  border: InputBorder.none,
-                                  hintText: 'แสดงความคิดเห็น . . .',
-                                  hintStyle: TextStyle(
-                                    fontFamily: 'Prompt',
-                                    fontSize: 16,
-                                    color: Color(0xFF4F4F4F),
-                                  ),
-                                ),
-                                style: TextStyle(
-                                  fontFamily: 'Prompt',
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
                           ],
                         ),
                       ),
