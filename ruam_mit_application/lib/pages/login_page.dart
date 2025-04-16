@@ -101,14 +101,32 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(height: 30),
             // Registration prompt
-            const Text(
-              'ผู้ใช้งานใหม่ ลงทะเบียน',
-              style: TextStyle(
-                fontFamily: 'Prompt',
-                fontSize: 18,
-                color: Color(0xFFD63939),
-                decoration: TextDecoration.underline,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'ผู้ใช้งานใหม่',
+                  style: TextStyle(
+                    fontFamily: 'Prompt',
+                    fontSize: 18,
+                  ),
+                ),
+                SizedBox(width: 10,),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, '/register');
+                  },
+                  child: Text(
+                    'ลงทะเบียน',
+                    style: TextStyle(
+                      fontFamily: 'Prompt',
+                      fontSize: 18,
+                      color: Color(0xFFD63939),
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                )
+              ],
             ),
           ],
         ),
