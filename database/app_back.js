@@ -347,7 +347,7 @@ router.post('/api/login', function (req, res) {
   if (!username || !password) {
       return res.status(400).send({
           success: false,
-          message: 'Please provide username and password'
+          message: 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน'
       });
   }
 
@@ -372,12 +372,12 @@ router.post('/api/login', function (req, res) {
               return res.send({
                   success: true,
                   uid: results[0].uid,
-                  message: 'Login successful'
+                  message: 'เข้าสู่ระบบสำเร็จ'
               });
           } else {
               return res.send({
                   success: false,
-                  message: 'Invalid username or password'
+                  message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'
               });
           }
       }
@@ -651,7 +651,7 @@ router.put('/api/user/:uid', async function (req, res) {
     if (!password || !old_password) {
       return res.status(400).json({
         error: true,
-        message: 'Both new password and old password are required'
+        message: 'กรุณากรอกทั้งรหัสผ่านเก่าและรหัสผ่านใหม่'
       });
     }
 
@@ -670,7 +670,7 @@ router.put('/api/user/:uid', async function (req, res) {
     if (!user) {
       return res.status(404).json({
         error: true,
-        message: 'User not found'
+        message: 'ไม่มีข้อมูลผู้ใช้นี้'
       });
     }
 
@@ -682,7 +682,7 @@ router.put('/api/user/:uid', async function (req, res) {
     if (oldPasswordHash !== user.password) {
       return res.status(401).json({
         error: true,
-        message: 'Old password is incorrect'
+        message: 'รหัสผ่านเก่าผิด'
       });
     }
 
@@ -705,7 +705,7 @@ router.put('/api/user/:uid', async function (req, res) {
     return res.json({
       error: false,
       data: results,
-      message: 'Password updated successfully'
+      message: 'เปลี่ยนรหัสผ่านสำเร็จ'
     });
 
   } catch (error) {
