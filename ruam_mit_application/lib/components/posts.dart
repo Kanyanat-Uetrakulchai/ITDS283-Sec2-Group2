@@ -59,7 +59,21 @@ class PostCard extends StatelessWidget {
               if (showDetails) ...[SizedBox(height: 15), _buildDetailSection()],
 
               if (post['tags'] != null && post['tags'].isNotEmpty)
-                _buildTagsSection(context), // Pass context here
+                _buildTagsSection(context),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    'อ่านเพิ่มเติม',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      // color: Color(0xffD63939),
+                    ),
+                  ),
+                  Icon(Icons.arrow_forward_ios_rounded, size: 15),
+                ],
+              ),
             ],
           ),
         ),
@@ -75,20 +89,6 @@ class PostCard extends StatelessWidget {
         _buildDetailRow('หมายเลขบัญชี', post['mij_bankno'] ?? 'N/A'),
         _buildDetailRow('ชื่อเจ้าของบัญชี', post['mij_name'] ?? 'N/A'),
         _buildDetailRow('ชื่อร้านค้า', post['mij_acc'] ?? 'N/A'),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Text(
-              'อ่านเพิ่มเติม',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-                // color: Color(0xffD63939),
-              ),
-            ),
-            Icon(Icons.arrow_forward_ios_rounded, size: 15),
-          ],
-        ),
       ],
     );
   }
@@ -142,8 +142,9 @@ class PostCard extends StatelessWidget {
                   );
                 },
                 child: Chip(
-                  label: Text(tag, style: TextStyle(color: Colors.white)),
-                  backgroundColor: Color(0xffD63939),
+                  // label: Text(tag, style: TextStyle(color: Colors.white)),
+                  label: Text(tag),
+                  backgroundColor: Colors.grey[200],
                 ),
               );
             }).toList(),

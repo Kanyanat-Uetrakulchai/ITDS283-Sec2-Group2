@@ -39,18 +39,84 @@ Connection.connect(function (err) {
 })
 
 router.get('/api/posts', function (req, res) {
-    Connection.query('SELECT p.*, u.profile, u.username FROM Post p INNER JOIN Users u on p.uid = u.uid ORDER BY p.p_timestamp DESC', function (error, results) {
-        if (error) throw error;
-        return res.send({ error: false, data: results, message: 'Posts retrieved.' });
-    });
+  Connection.query(`
+      SELECT 
+          p.*, 
+          u.profile, 
+          u.username, 
+          IFNULL(GROUP_CONCAT(DISTINCT t.tag), '') as tags
+      FROM Post p 
+      INNER JOIN Users u ON p.uid = u.uid
+      LEFT JOIN Tags t ON p.postId = t.postId
+      GROUP BY p.postId
+      ORDER BY p.p_timestamp DESC
+  `, function (error, results) {
+      if (error) {
+          console.error('Database error:', error);
+          return res.status(500).send({ 
+              error: true, 
+              message: 'Failed to retrieve posts' 
+          });
+      }
+
+      // Process results to convert empty tag string to empty array
+      const processedResults = results.map(post => ({
+          ...post,
+          tags: post.tags ? post.tags.split(',').filter(tag => tag !== '') : []
+      }));
+
+      return res.send({ 
+          error: false, 
+          data: processedResults, 
+          message: 'Posts retrieved successfully' 
+      });
+  });
 });
 
 router.get('/api/posts/:tag', function (req, res) {
-    let tag = req.params.tag
-    Connection.query('SELECT p.*, u.profile, u.username FROM (Post p INNER JOIN Users u on p.uid = u.uid)INNER JOIN Tags t on p.postId = t.postId ORDER BY p.p_timestamp DESC', function (error, results) {
-        if (error) throw error;
-        return res.send({ error: false, data: results, message: 'Posts retrieved.' });
-    });
+  const tag = req.params.tag;
+  
+  if (!tag || typeof tag !== 'string') {
+      return res.status(400).send({ 
+          error: true, 
+          message: 'Invalid tag parameter' 
+      });
+  }
+
+  Connection.query(`
+      SELECT 
+          p.*, 
+          u.profile, 
+          u.username, 
+          IFNULL(GROUP_CONCAT(DISTINCT t2.tag), '') as tags
+      FROM Post p 
+      INNER JOIN Users u ON p.uid = u.uid
+      INNER JOIN Tags t ON p.postId = t.postId 
+      LEFT JOIN Tags t2 ON p.postId = t2.postId
+      WHERE t.tag = ? 
+      GROUP BY p.postId
+      ORDER BY p.p_timestamp DESC
+  `, [tag], function (error, results) {
+      if (error) {
+          console.error('Database error:', error);
+          return res.status(500).send({ 
+              error: true, 
+              message: 'Failed to retrieve posts' 
+          });
+      }
+
+      // Process results to convert tags string to array
+      const processedResults = results.map(post => ({
+          ...post,
+          tags: post.tags ? post.tags.split(',').filter(t => t !== '') : []
+      }));
+
+      return res.send({ 
+          error: false, 
+          data: processedResults, 
+          message: 'Posts retrieved successfully' 
+      });
+  });
 });
 
 router.get('/api/pop_tags', function (req, res){
@@ -60,20 +126,97 @@ router.get('/api/pop_tags', function (req, res){
     })
 });
 
-router.get('/api/post/:postId', function (req, res){
-    let postId = req.params.postId
-    Connection.query('SELECT * FROM Post WHERE postId = ?;',postId, function (error, results){
-        if (error) throw error;
-        return res.send({error: false, data: results, message: 'Post retrieved'})
-    })
+router.get('/api/post/:postId', function (req, res) {
+  const postId = parseInt(req.params.postId);
+  
+  if (!postId || isNaN(postId)) {
+      return res.status(400).send({ 
+          error: true, 
+          message: 'Invalid post ID' 
+      });
+  }
+
+  Connection.query(`
+      SELECT 
+          p.*,
+          u.username,
+          u.profile,
+          IFNULL(GROUP_CONCAT(DISTINCT t.tag), '') as tags
+      FROM Post p
+      LEFT JOIN Users u ON p.uid = u.uid
+      LEFT JOIN Tags t ON p.postId = t.postId
+      WHERE p.postId = ?
+      GROUP BY p.postId
+  `, [postId], function (error, results) {
+      if (error) {
+          console.error('Database error:', error);
+          return res.status(500).send({ 
+              error: true, 
+              message: 'Failed to retrieve post' 
+          });
+      }
+
+      if (results.length === 0) {
+          return res.status(404).send({ 
+              error: true, 
+              message: 'Post not found' 
+          });
+      }
+
+      const post = {
+          ...results[0],
+          tags: results[0].tags ? results[0].tags.split(',').filter(t => t !== '') : []
+      };
+      console.log(post);
+      return res.send({ 
+          error: false, 
+          data: post, 
+          message: 'Post retrieved successfully' 
+      });
+  });
 });
 
-router.get('/api/profile/post/:uid', function (req, res){
-    let uid = req.params.uid
-    Connection.query('SELECT * FROM Post JOIN Users ON Post.uid = Users.uid WHERE Users.uid = ? ORDER BY p_timestamp DESC;',uid, function (error, results){
-        if (error) throw error;
-        return res.send({error: false, data: results, message: 'Post retrieved'})
-    })
+router.get('/api/profile/post/:uid', function (req, res) {
+  const uid = parseInt(req.params.uid);
+  
+  if (!uid || isNaN(uid)) {
+      return res.status(400).send({ 
+          error: true, 
+          message: 'Invalid user ID' 
+      });
+  }
+
+  Connection.query(`
+      SELECT 
+          p.*,
+          u.username,
+          u.profile,
+          IFNULL(GROUP_CONCAT(DISTINCT t.tag), '') as tags
+      FROM Post p
+      JOIN Users u ON p.uid = u.uid
+      LEFT JOIN Tags t ON p.postId = t.postId
+      WHERE u.uid = ?
+      GROUP BY p.postId
+      ORDER BY p.p_timestamp DESC
+  `, [uid], function (error, results) {
+      if (error) {
+          console.error('Database error:', error);
+          return res.status(500).send({ 
+              error: true, 
+              message: 'Failed to retrieve posts' 
+          });
+      }
+
+      const processedResults = results.map(post => ({
+          ...post,
+          tags: post.tags ? post.tags.split(',').filter(t => t !== '') : []
+      }));
+      return res.send({ 
+          error: false, 
+          data: processedResults, 
+          message: 'Posts retrieved successfully' 
+      });
+  });
 });
 
 router.get('/api/post/detail/:postId', function (req, res){

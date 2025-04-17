@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'post_page.dart';
-import '../components/image_grid.dart';
+import 'package:ruam_mit_application/components/posts.dart';
 
 class ProfilePage extends StatefulWidget {
   final int uid;
@@ -375,74 +374,9 @@ class ProfilePageState extends State<ProfilePage> {
       itemCount: _posts.length,
       itemBuilder: (context, index) {
         final post = _posts[index];
-        return InkWell(
-          onTap: () {
-            print('post ${post['postId']} clicked!');
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PostPage(postId: post['postId']),
-              ),
-            );
-          },
-          child: Card(
-            margin: EdgeInsets.only(left: 0, right: 46, top: 8, bottom: 8),
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            color: Colors.white,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProfilePage(uid: post['uid']),
-                        ),
-                      );
-                    },
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Color(0xffD63939),
-                        child: Text(
-                          post['username']
-                                  ?.toString()
-                                  .substring(0, 1)
-                                  .toUpperCase() ??
-                              '?',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-
-                      title: Text(post['username'].toString()),
-                      trailing: Text(
-                        post['p_timestamp'].toString().split('T')[0],
-                      ),
-                    ),
-                  ),
-                  Container(
-                    alignment: Alignment.centerLeft,
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      post['caption'] ?? '',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  Divider(color: Color(0xFFACACAC)),
-                  SizedBox(height: 10),
-                  ImageGrid(post: post),
-                  SizedBox(height: 10),
-                ],
-              ),
-            ),
-          ),
+        return Container(
+          margin: EdgeInsets.only(left: 0, right: 46, top: 8, bottom: 8),
+          child: PostCard(post: post, showDetails: true),
         );
       },
     );
@@ -455,68 +389,15 @@ class ProfilePageState extends State<ProfilePage> {
         child: Center(child: Text('ยังไม่ได้ติดตามโพสต์ใด ๆ')),
       );
     }
-
     return ListView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
+      shrinkWrap: true, // Important for nested ListView
+      physics: NeverScrollableScrollPhysics(), // Disable inner scroll
       itemCount: _followingPosts.length,
       itemBuilder: (context, index) {
         final post = _followingPosts[index];
-        return InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PostPage(postId: post['postId']),
-              ),
-            );
-          },
-          child: Card(
-            margin: EdgeInsets.only(left: 0, right: 46, top: 8, bottom: 8),
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            color: Colors.white,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Color(0xffD63939),
-                      child: Text(
-                        post['username']
-                                ?.toString()
-                                .substring(0, 1)
-                                .toUpperCase() ??
-                            '?',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    title: Text(post['username'] ?? ''),
-                    trailing: Text(
-                      post['p_timestamp'].toString().split('T')[0],
-                    ),
-                  ),
-                  Container(
-                    alignment: Alignment.centerLeft,
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      post['caption'] ?? '',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  Divider(color: Color(0xFFACACAC)),
-                  SizedBox(height: 10),
-                  ImageGrid(post: post),
-                ],
-              ),
-            ),
-          ),
+        return Container(
+          margin: EdgeInsets.only(left: 0, right: 46, top: 8, bottom: 8),
+          child: PostCard(post: post, showDetails: true),
         );
       },
     );
