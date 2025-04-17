@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert'; // for jsonDecode
+import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ruam_mit_application/pages/profile_page.dart';
-import 'post_page.dart';
-import 'post_bytag.dart';
+import 'package:ruam_mit_application/pages/post_page.dart';
+import 'package:ruam_mit_application/pages/post_bytag.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../components/image_grid.dart';
+import 'package:ruam_mit_application/components/posts.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -125,9 +125,7 @@ class HomePageState extends State<HomePage> {
                   padding: EdgeInsets.all(20),
                   children: [
                     InkWell(
-                      onTap: () {
-                        _launchURL();
-                      },
+                      onTap: _launchURL,
                       child: Image.asset('assets/police_banner.png'),
                     ),
                     SizedBox(height: 20),
@@ -139,7 +137,7 @@ class HomePageState extends State<HomePage> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    _poptags(),
+                    PopularTags(tags: _tags),
                     Divider(color: Color(0xFFACACAC)),
                     SizedBox(height: 20),
                     Text(
@@ -151,130 +149,12 @@ class HomePageState extends State<HomePage> {
                       ),
                     ),
                     SizedBox(height: 10),
-                    ..._posts.map((post) {
-                      return InkWell(
-                        onTap: () {
-                          print('post ${post['postId']} clicked!');
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => PostPage(postId: post['postId']),
-                            ),
-                          );
-                        },
-                        child: Card(
-                          color: Colors.white,
-                          elevation: 3,
-                          margin: EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (context) =>
-                                                ProfilePage(uid: post['uid']),
-                                      ),
-                                    );
-                                  },
-                                  child: ListTile(
-                                    leading: CircleAvatar(
-                                      backgroundColor: Color(0xffD63939),
-                                      child: Text(
-                                        post['username']
-                                                ?.toString()
-                                                .substring(0, 1)
-                                                .toUpperCase() ??
-                                            '?',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ),
-
-                                    title: Text(post['username'].toString()),
-                                    trailing: Text(
-                                      post['p_timestamp'].toString().split(
-                                        'T',
-                                      )[0],
-                                    ),
-                                  ),
-                                ),
-                                Divider(color: Color(0xFFACACAC)),
-                                SizedBox(height: 6),
-                                Text(
-                                  post['caption'] ?? '',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                SizedBox(height: 10),
-                                ImageGrid(post: post),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                    ..._posts
+                        .map((post) => PostCard(post: post, showDetails: true))
+                        .toList(),
                   ],
                 ),
               ),
-    );
-  }
-
-  Wrap _poptags() {
-    // return Wrap();
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children:
-          _tags.map((tag) {
-            return ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xffD63939),
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PostBytag(tag: tag['tag']),
-                  ),
-                );
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    tag['tag'],
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(width: 5),
-                  Text(
-                    tag['COUNT(p.postId)'].toString(),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
     );
   }
 

@@ -123,6 +123,80 @@ router.get('/api/reaction', function (req, res) {
   });
 });
 
+// Search posts
+router.post('/posts/search', async (req, res) => {
+  try {
+    const { bank, accountNumber, name, shopName, orderChannel, tag } = req.body;
+    
+    let baseQuery = `
+      SELECT 
+        p.*,
+        GROUP_CONCAT(t.tag) as tags
+      FROM Post p
+      LEFT JOIN Tags t ON p.postId = t.postId
+    `;
+    
+    const conditions = [];
+    const params = [];
+    
+    if (bank) {
+      conditions.push('p.mij_bank = ?');
+      params.push(bank);
+    }
+    
+    if (accountNumber) {
+      conditions.push('p.mij_bankno LIKE ?');
+      params.push(`%${accountNumber}%`);
+    }
+    
+    if (name) {
+      conditions.push('p.mij_name LIKE ?');
+      params.push(`%${name}%`);
+    }
+    
+    if (shopName) {
+      conditions.push('p.mij_acc LIKE ?');
+      params.push(`%${shopName}%`);
+    }
+    
+    if (orderChannel) {
+      conditions.push('p.mij_plat LIKE ?');
+      params.push(`%${orderChannel}%`);
+    }
+    
+    if (conditions.length > 0) {
+      baseQuery += ' WHERE ' + conditions.join(' AND ');
+    }
+    
+    baseQuery += ' GROUP BY p.postId';
+    
+    // If tag is specified, we need to filter after the initial query
+    // or use a HAVING clause with FIND_IN_SET (less efficient)
+    if (tag) {
+      baseQuery = `
+        SELECT * FROM (${baseQuery}) AS filtered_posts
+        WHERE tags LIKE ? OR tags IS NULL
+      `;
+      params.push(`%${tag}%`);
+    }
+    
+    const [rows] = await Connection.promise().query(baseQuery, params);
+    
+    // Process the results to convert tags string to array
+    const posts = rows.map(row => {
+      return {
+        ...row,
+        tags: row.tags ? row.tags.split(',') : []
+      };
+    });
+    
+    res.json({ posts });
+  } catch (error) {
+    console.error('Error searching posts:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.post('/api/login', function (req, res) {
     const { username, password } = req.body;
 

@@ -20,10 +20,11 @@ class CommentSection extends StatefulWidget {
 class _CommentSectionState extends State<CommentSection> {
   final TextEditingController _controller = TextEditingController();
   List<dynamic> _comments = [];
+  String _responseMessage = "";
 
   final url = dotenv.env['url'];
-  List<File?> _imageFiles = [];
-  final picker = ImagePicker();
+  List<XFile> _imageFiles = [];
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -31,30 +32,56 @@ class _CommentSectionState extends State<CommentSection> {
     _fetchComments();
   }
 
-  Future<void> _pickImage() async {
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null && _imageFiles.length < 4) {
+  Future<void> _pickImages() async {
+    try {
+      final List<XFile>? images = await _picker.pickMultiImage();
+      if (images != null) {
+        if (images.length <= 4) {
+          setState(() {
+            _imageFiles = images;
+            _responseMessage = "";
+          });
+        } else {
+          setState(() {
+            _responseMessage = "ใส่รูปได้สูงสุด 4 รูป";
+          });
+        }
+      }
+    } catch (e) {
       setState(() {
-        _imageFiles.add(File(pickedFile.path));
+        _responseMessage = "เกิดข้อผิดพลาดในการเลือกรูป: $e";
       });
     }
   }
 
   Future<void> _fetchComments() async {
-    final response = await http.get(
-      Uri.parse('$url/api/comment/${widget.postId}'),
-    );
-    if (response.statusCode == 200) {
-      final jsonData = jsonDecode(response.body);
+    try {
+      final response = await http.get(
+        Uri.parse('$url/api/comment/${widget.postId}'),
+      );
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        setState(() {
+          _comments = jsonData['data'] ?? [];
+        });
+      } else {
+        setState(() {
+          _responseMessage =
+              "ไม่สามารถโหลดความคิดเห็นได้: ${response.statusCode}";
+        });
+      }
+    } catch (e) {
       setState(() {
-        _comments = jsonData['data'] ?? [];
+        _responseMessage = "เกิดข้อผิดพลาด: $e";
       });
     }
   }
 
   Future<void> _submitComment() async {
     if (_controller.text.trim().isEmpty && _imageFiles.isEmpty) {
-      print('No text or image provided for comment.');
+      setState(() {
+        _responseMessage = "กรุณาใส่ข้อความหรือรูปภาพ";
+      });
       return;
     }
 
@@ -70,106 +97,186 @@ class _CommentSectionState extends State<CommentSection> {
 
       for (int i = 0; i < _imageFiles.length; i++) {
         request.files.add(
-          await http.MultipartFile.fromPath('image', _imageFiles[i]!.path),
+          await http.MultipartFile.fromPath('images', _imageFiles[i].path),
         );
       }
 
       var response = await request.send();
 
       if (response.statusCode == 201) {
-        print('Comment submitted successfully');
-        _controller.clear();
         setState(() {
+          _controller.clear();
           _imageFiles.clear();
+          _responseMessage = "";
         });
         await _fetchComments();
       } else {
-        print('Failed to submit comment. Status code: ${response.statusCode}');
         final respStr = await response.stream.bytesToString();
-        print('Response: $respStr');
+        setState(() {
+          _responseMessage = "ไม่สามารถโพสต์ความคิดเห็นได้: $respStr";
+        });
       }
     } catch (e) {
-      print('Exception in _submitComment: $e');
+      setState(() {
+        _responseMessage = "เกิดข้อผิดพลาด: $e";
+      });
     }
+  }
+
+  Widget _buildImagePreview() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: SizedBox(
+        height: 70,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: _imageFiles.length,
+          separatorBuilder: (context, index) => SizedBox(width: 10),
+          itemBuilder: (context, index) {
+            return Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(
+                    File(_imageFiles[index].path),
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  child: IconButton(
+                    icon: Icon(Icons.cancel, color: Colors.red, size: 20),
+                    onPressed: () {
+                      setState(() {
+                        _imageFiles.removeAt(index);
+                      });
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        for (var c in _comments)
-          ListTile(
-            leading: CircleAvatar(child: Text(c['username'][0].toUpperCase())),
-            title: Text(c['username'], style: TextStyle(fontFamily: 'Prompt')),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(c['message'], style: TextStyle(fontFamily: 'Prompt')),
-                ImageGrid(
-                  post: {
-                    'p_p1': c['c_p1'],
-                    'p_p2': c['c_p2'],
-                    'p_p3': c['c_p3'],
-                    'p_p4': c['c_p4'],
-                  },
-                ),
-              ],
+        for (var comment in _comments)
+          Card(
+            elevation: 3,
+            margin: EdgeInsets.symmetric(vertical: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-          ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Color(0xFFD9D9D9),
-                  border: Border.all(color: Color(0xFFD9D9D9)),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: TextField(
-                  controller: _controller,
-                  decoration: InputDecoration(
-                    hintText: 'แสดงความคิดเห็น...',
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: CircleAvatar(
+                      backgroundColor: Color(0xffD63939),
+                      child: Text(
+                        comment['username']
+                                ?.toString()
+                                .substring(0, 1)
+                                .toUpperCase() ??
+                            '?',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
-                    border: InputBorder.none,
+                    title: Text(
+                      comment['username'].toString(),
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    trailing: Text(
+                      comment['c_timestamp']?.toString().split('T')[0] ?? '',
+                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
                   ),
-                ),
-              ),
-            ),
-            IconButton(icon: Icon(Icons.photo), onPressed: _pickImage),
-            IconButton(icon: Icon(Icons.send), onPressed: _submitComment),
-          ],
-        ),
-        if (_imageFiles.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Wrap(
-              spacing: 8,
-              children:
-                  _imageFiles.map((file) {
-                    return Stack(
+                  SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Image.file(file!, height: 100),
-                        Positioned(
-                          right: 0,
-                          child: IconButton(
-                            icon: Icon(Icons.cancel, color: Colors.red),
-                            onPressed: () {
-                              setState(() {
-                                _imageFiles.remove(file);
-                              });
-                            },
-                          ),
+                        Text(
+                          comment['message'] ?? '',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        SizedBox(height: 8),
+                        ImageGrid(
+                          post: {
+                            'p_p1': comment['c_p1'],
+                            'p_p2': comment['c_p2'],
+                            'p_p3': comment['c_p3'],
+                            'p_p4': comment['c_p4'],
+                          },
                         ),
                       ],
-                    );
-                  }).toList(),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
+        Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Column(
+            children: [
+              if (_responseMessage.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    _responseMessage,
+                    style: TextStyle(color: Colors.red, fontFamily: 'Prompt'),
+                  ),
+                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Color(0xFFD9D9D9),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: TextField(
+                        controller: _controller,
+                        decoration: InputDecoration(
+                          hintText: 'แสดงความคิดเห็น...',
+                          hintStyle: TextStyle(fontFamily: 'Prompt'),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          border: InputBorder.none,
+                        ),
+                        style: TextStyle(fontFamily: 'Prompt'),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.photo, color: Color(0xffD63939)),
+                    onPressed: _pickImages,
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.send, color: Color(0xffD63939)),
+                    onPressed: _submitComment,
+                  ),
+                ],
+              ),
+              if (_imageFiles.isNotEmpty) _buildImagePreview(),
+            ],
+          ),
+        ),
       ],
     );
   }

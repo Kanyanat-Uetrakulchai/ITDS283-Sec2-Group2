@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../components/posts.dart';
 
 class SearchPage extends StatefulWidget {
   @override
@@ -6,13 +10,57 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  String? _selectedvalue;
+  String? _selectedBank;
+  List<Map<String, dynamic>> _searchResults = [];
+  bool _isLoading = false;
 
-  final TextEditingController _accountNumberController = TextEditingController();
+  final TextEditingController _accountNumberController =
+      TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _shopNameController = TextEditingController();
   final TextEditingController _orderChannelController = TextEditingController();
   final TextEditingController _tagController = TextEditingController();
+
+  Future<void> _searchPosts() async {
+    setState(() {
+      _isLoading = true;
+      _searchResults = [];
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('${dotenv.env['url']}/posts/search'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'bank': _selectedBank,
+          'accountNumber': _accountNumberController.text,
+          'name': _nameController.text,
+          'shopName': _shopNameController.text,
+          'orderChannel': _orderChannelController.text,
+          'tag': _tagController.text,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _searchResults = List<Map<String, dynamic>>.from(data['posts']);
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error searching posts: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,46 +80,142 @@ class _SearchPageState extends State<SearchPage> {
         ),
         backgroundColor: const Color(0xffD63939),
       ),
-      body: Container(
-        margin: EdgeInsets.fromLTRB(15, 15, 15, 10),
-        child: Column(
-          children: [
-            bankDropdown(),
-            SizedBox(height: 15),
-            buildTextFieldRow('หมายเลขบัญชี', _accountNumberController),
-            SizedBox(height: 15),
-            buildTextFieldRow('ชื่อ - นามสกุล', _nameController),
-            SizedBox(height: 15),
-            buildTextFieldRow('ชื่อร้านค้า', _shopNameController),
-            SizedBox(height: 15),
-            buildTextFieldRow('ช่องทางการสั่งซื้อ', _orderChannelController),
-            SizedBox(height: 15),
-            buildTextFieldRow('Tag', _tagController),
-            SizedBox(height: 15),
-            Divider(color: Color(0xFFACACAC)),
-            SizedBox(height: 15),
-          ],
+      body: SingleChildScrollView(
+        child: Container(
+          margin: EdgeInsets.fromLTRB(15, 15, 15, 10),
+          child: Column(
+            children: [
+              bankDropdown(),
+              SizedBox(height: 15),
+              buildTextFieldRow('หมายเลขบัญชี', _accountNumberController),
+              SizedBox(height: 15),
+              buildTextFieldRow('ชื่อ - นามสกุล', _nameController),
+              SizedBox(height: 15),
+              buildTextFieldRow('ชื่อร้านค้า', _shopNameController),
+              SizedBox(height: 15),
+              buildTextFieldRow('ช่องทางการสั่งซื้อ', _orderChannelController),
+              SizedBox(height: 15),
+              buildTextFieldRow('Tag', _tagController),
+              SizedBox(height: 15),
+              Divider(color: Color(0xFFACACAC)),
+              SizedBox(height: 15),
+              ElevatedButton(
+                onPressed: _isLoading ? null : _searchPosts,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xffD63939),
+                  minimumSize: Size(double.infinity, 50),
+                ),
+                child:
+                    _isLoading
+                        ? CircularProgressIndicator(color: Colors.white)
+                        : Text(
+                          'ค้นหา',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontFamily: 'Prompt',
+                          ),
+                        ),
+              ),
+              SizedBox(height: 20),
+              if (_searchResults.isNotEmpty)
+                ..._searchResults
+                    .map((post) => PostCard(post: post, showDetails: true))
+                    .toList(),
+              if (_searchResults.isEmpty && !_isLoading)
+                Text(
+                  'ไม่พบผลลัพธ์',
+                  style: TextStyle(
+                    fontFamily: 'Prompt',
+                    fontSize: 18,
+                    color: Colors.grey,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 
+  // Widget PostCard({required Map<String, dynamic> post}) {
+  //   return Card(
+  //     margin: EdgeInsets.only(bottom: 15),
+  //     child: Padding(
+  //       padding: EdgeInsets.all(15),
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           Text(
+  //             post['caption'] ?? 'No caption',
+  //             style: TextStyle(
+  //               fontFamily: 'Prompt',
+  //               fontSize: 18,
+  //               fontWeight: FontWeight.bold,
+  //             ),
+  //           ),
+  //           SizedBox(height: 10),
+  //           Text(
+  //             post['detail'] ?? 'No details',
+  //             style: TextStyle(fontFamily: 'Prompt', fontSize: 16),
+  //           ),
+  //           SizedBox(height: 10),
+  //           Text(
+  //             'Bank: ${post['mij_bank'] ?? 'N/A'}',
+  //             style: TextStyle(
+  //               fontFamily: 'Prompt',
+  //               fontSize: 14,
+  //               color: Colors.grey[600],
+  //             ),
+  //           ),
+  //           Text(
+  //             'Account: ${post['mij_bankno'] ?? 'N/A'}',
+  //             style: TextStyle(
+  //               fontFamily: 'Prompt',
+  //               fontSize: 14,
+  //               color: Colors.grey[600],
+  //             ),
+  //           ),
+  //           Text(
+  //             'Name: ${post['mij_name'] ?? 'N/A'}',
+  //             style: TextStyle(
+  //               fontFamily: 'Prompt',
+  //               fontSize: 14,
+  //               color: Colors.grey[600],
+  //             ),
+  //           ),
+  //           if (post['tags'] != null && post['tags'].isNotEmpty)
+  //             Wrap(
+  //               children:
+  //                   (post['tags'] as List).map<Widget>((tag) {
+  //                     return Padding(
+  //                       padding: EdgeInsets.only(right: 5, top: 5),
+  //                       child: Chip(
+  //                         label: Text(tag),
+  //                         backgroundColor: Colors.grey[200],
+  //                       ),
+  //                     );
+  //                   }).toList(),
+  //             ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
   Row buildTextFieldRow(String label, TextEditingController controller) {
     return Row(
       children: [
         Container(
-          width: 160, // Fixed width for labels
+          width: 160,
           child: Text(
             label,
-            style: TextStyle(
-              fontFamily: 'Prompt',
-              fontSize: 20,
-            ),
+            style: TextStyle(fontFamily: 'Prompt', fontSize: 20),
           ),
         ),
         SizedBox(width: 10),
         Container(
-          width: 200, // Fixed width for text fields
+          width: 200,
           height: 40,
           decoration: BoxDecoration(
             border: Border.all(color: Color(0xFFD63939)),
@@ -83,10 +227,7 @@ class _SearchPageState extends State<SearchPage> {
               contentPadding: EdgeInsets.symmetric(horizontal: 10),
               border: InputBorder.none,
             ),
-            style: TextStyle(
-              fontFamily: 'Prompt',
-              fontSize: 16,
-            ),
+            style: TextStyle(fontFamily: 'Prompt', fontSize: 16),
           ),
         ),
       ],
@@ -97,18 +238,15 @@ class _SearchPageState extends State<SearchPage> {
     return Row(
       children: [
         Container(
-          width: 160, // Same width as other labels
+          width: 160,
           child: Text(
             'ธนาคาร',
-            style: TextStyle(
-              fontFamily: 'Prompt',
-              fontSize: 20,
-            ),
+            style: TextStyle(fontFamily: 'Prompt', fontSize: 20),
           ),
         ),
         SizedBox(width: 10),
         Container(
-          width: 200, // Same width as other fields
+          width: 200,
           height: 40,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5.0),
@@ -122,41 +260,36 @@ class _SearchPageState extends State<SearchPage> {
                 child: Icon(Icons.keyboard_arrow_down),
               ),
               iconSize: 24,
-              items: [
-                'ธนาคารกสิกรไทย',
-                'ธนาคารกรุงไทย',
-                'ธนาคารไทยพาณิชย์',
-                'ธนาคารกรุงเทพ'
-              ].map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Center(
-                    child: Text(
-                      value,
-                      style: TextStyle(
-                        fontFamily: 'Prompt',
-                        fontSize: 16,
+              items:
+                  [
+                    'ธนาคารกสิกรไทย',
+                    'ธนาคารกรุงไทย',
+                    'ธนาคารไทยพาณิชย์',
+                    'ธนาคารกรุงเทพ',
+                  ].map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Center(
+                        child: Text(
+                          value,
+                          style: TextStyle(fontFamily: 'Prompt', fontSize: 16),
+                        ),
                       ),
-                    ),
-                  ),
-                );
-              }).toList(),
+                    );
+                  }).toList(),
               onChanged: (String? newValue) {
                 setState(() {
-                  _selectedvalue = newValue;
+                  _selectedBank = newValue;
                 });
               },
               hint: Center(
                 child: Text(
                   'เลือกธนาคาร',
-                  style: TextStyle(
-                    fontFamily: 'Prompt',
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(fontFamily: 'Prompt', fontSize: 16),
                 ),
               ),
-              value: _selectedvalue,
-            ), 
+              value: _selectedBank,
+            ),
           ),
         ),
       ],
