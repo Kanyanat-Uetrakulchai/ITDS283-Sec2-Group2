@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart'; // Add this import
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:crypto/crypto.dart'; // For password hashing
 
 class ChangePWPage extends StatefulWidget {
   const ChangePWPage({super.key});
@@ -12,77 +13,111 @@ class ChangePWPage extends StatefulWidget {
 }
 
 class _ChangePWPageState extends State<ChangePWPage> {
-  final TextEditingController _oldpasswordController = TextEditingController();
-  final TextEditingController _newpasswordController = TextEditingController();
-  final TextEditingController _confirmpasswordController = TextEditingController();
+  final TextEditingController _oldPasswordController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
   bool _obscureOldPassword = true;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
-  bool _passwordsMatch = true;
+  String? _errorMessage;
 
-  // Add this function to get UID from shared preferences
+  // Hash password using SHA-256
+  String _hashPassword(String password) {
+    var bytes = utf8.encode(password); // Convert to UTF-8 bytes
+    var digest = sha256.convert(bytes); // Create SHA-256 hash
+    return digest.toString(); // Return hex string
+  }
+
   Future<int?> _getUserId() async {
     final prefs = await SharedPreferences.getInstance();
-    print(prefs.getInt('uid'));
     return prefs.getInt('uid');
-    
   }
 
   Future<void> _changePassword() async {
-    if (_newpasswordController.text != _confirmpasswordController.text) {
-      setState(() => _passwordsMatch = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('รหัสผ่านใหม่ไม่ตรงกัน')),
-      );
+    // Validate inputs
+    if (_oldPasswordController.text.isEmpty) {
+      setState(() => _errorMessage = 'กรุณากรอกรหัสผ่านเดิม');
+      return;
+    }
+
+    if (_newPasswordController.text.isEmpty) {
+      setState(() => _errorMessage = 'กรุณากรอกรหัสผ่านใหม่');
+      return;
+    }
+
+    if (_newPasswordController.text != _confirmPasswordController.text) {
+      setState(() => _errorMessage = 'รหัสผ่านใหม่ไม่ตรงกัน');
+      return;
+    }
+
+    if (_newPasswordController.text.length < 6) {
+      setState(() => _errorMessage = 'รหัสผ่านควรมีความยาวอย่างน้อย 6 ตัวอักษร');
       return;
     }
 
     setState(() {
-      _passwordsMatch = true;
+      _errorMessage = null;
       _isLoading = true;
     });
 
     try {
       final userId = await _getUserId();
       if (userId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('ไม่พบข้อมูลผู้ใช้')),
-        );
+        _showError('ไม่พบข้อมูลผู้ใช้');
         return;
       }
 
+      // Hash the passwords before sending
+      final hashedNewPassword = _hashPassword(_newPasswordController.text);
+      final hashedOldPassword = _hashPassword(_oldPasswordController.text);
+
       final Map<String, dynamic> requestBody = {
-        'password': _newpasswordController.text,
+        'password': hashedNewPassword, // Send hashed password
+        'old_password': hashedOldPassword, // Also send hashed old password for verification
       };
 
       final response = await http.put(
         Uri.parse('${dotenv.env['url']}/api/user/$userId'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
-      );
+      ).timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('เปลี่ยนรหัสผ่านสำเร็จ')),
-        );
-        Navigator.pop(context);
+        _showSuccess('เปลี่ยนรหัสผ่านสำเร็จ');
+        if (mounted) Navigator.pop(context);
       } else {
         final error = jsonDecode(response.body)['message'] ?? 'เปลี่ยนรหัสผ่านไม่สำเร็จ';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error)),
-        );
+        _showError(error);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('เกิดข้อผิดพลาด: $e')),
-      );
+      _showError('เกิดข้อผิดพลาด: ${e.toString()}');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  void _showSuccess(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   @override
@@ -107,24 +142,34 @@ class _ChangePWPageState extends State<ChangePWPage> {
           children: [
             _buildPasswordField(
               label: 'รหัสผ่านเดิม',
-              controller: _oldpasswordController,
+              controller: _oldPasswordController,
               obscureText: _obscureOldPassword,
               onToggleVisibility: () => setState(() => _obscureOldPassword = !_obscureOldPassword),
             ),
             const SizedBox(height: 20),
             _buildPasswordField(
               label: 'รหัสผ่านใหม่',
-              controller: _newpasswordController,
+              controller: _newPasswordController,
               obscureText: _obscureNewPassword,
               onToggleVisibility: () => setState(() => _obscureNewPassword = !_obscureNewPassword),
             ),
             const SizedBox(height: 20),
             _buildPasswordField(
               label: 'ยืนยันรหัสผ่าน',
-              controller: _confirmpasswordController,
+              controller: _confirmPasswordController,
               obscureText: _obscureConfirmPassword,
               onToggleVisibility: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
             ),
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 10),
+              Text(
+                _errorMessage!,
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontFamily: 'Prompt',
+                ),
+              ),
+            ],
             const SizedBox(height: 30),
             SizedBox(
               width: double.infinity,
@@ -160,6 +205,7 @@ class _ChangePWPageState extends State<ChangePWPage> {
     required TextEditingController controller,
     required bool obscureText,
     required VoidCallback onToggleVisibility,
+
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -209,9 +255,9 @@ class _ChangePWPageState extends State<ChangePWPage> {
 
   @override
   void dispose() {
-    _oldpasswordController.dispose();
-    _newpasswordController.dispose();
-    _confirmpasswordController.dispose();
+    _oldPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 }

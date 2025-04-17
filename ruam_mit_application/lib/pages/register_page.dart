@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:crypto/crypto.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -13,9 +14,17 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmpasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _passwordsMatch = true;
+  String? _passwordError;
+  String? _confirmPasswordError;
+  bool _isLoading = false;
+
+  String _hashPassword(String password) {
+    var bytes = utf8.encode(password);
+    var digest = sha256.convert(bytes);
+    return digest.toString();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,40 +50,61 @@ class _RegisterPageState extends State<RegisterPage> {
             children: [
               _buildUserField(label: 'ชื่อผู้ใช้งาน', controller: _usernameController),
               const SizedBox(height: 20),
-              _buildPasswordField(label: 'รหัสผ่าน', controller: _passwordController),
+              _buildPasswordField(
+                label: 'รหัสผ่าน', 
+                controller: _passwordController,
+                isPasswordField: true,
+              ),
               const SizedBox(height: 20),
               _buildPasswordField(
                 label: 'ยืนยันรหัสผ่าน', 
-                controller: _confirmpasswordController,
+                controller: _confirmPasswordController,
                 isConfirmField: true,
               ),
-              if (!_passwordsMatch)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    'รหัสผ่านไม่ตรงกัน โปรดกรอกใหม่อีกครั้ง',
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontFamily: 'Prompt',
-                    ),
-                  ),
-                ),
               const SizedBox(height: 30),
               ElevatedButton(
-                onPressed: _registerUser,
+                onPressed: _isLoading ? null : _registerUser,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xffD63939),
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                 ),
-                child: const Text(
-                  'ลงทะเบียน',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontFamily: 'Prompt',
-                    fontSize: 18,
-                  ),
-                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'ลงทะเบียน',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'Prompt',
+                          fontSize: 18,
+                        ),
+                      ),
               ),
+              if (_passwordError != null || _confirmPasswordError != null) ...[
+                const SizedBox(height: 20),
+                if (_passwordError != null)
+                  Text(
+                    _passwordError!,
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontFamily: 'Prompt',
+                    ),
+                  ),
+                if (_confirmPasswordError != null)
+                  Text(
+                    _confirmPasswordError!,
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontFamily: 'Prompt',
+                    ),
+                  ),
+              ],
             ],
           ),
         ),
@@ -119,7 +149,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'โปรดกรอก $label';
+                  return null; // We'll handle this in _registerUser
                 }
                 return null;
               },
@@ -133,6 +163,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget _buildPasswordField({
     required String label,
     required TextEditingController controller,
+    bool isPasswordField = false,
     bool isConfirmField = false,
   }) {
     return Row(
@@ -167,22 +198,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 fontFamily: 'Prompt',
                 fontSize: 16,
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'โปรดกรอก $label';
-                }
-                if (isConfirmField && value != _passwordController.text) {
-                  setState(() {
-                    _passwordsMatch = false;
-                  });
-                  return '';
-                } else {
-                  setState(() {
-                    _passwordsMatch = true;
-                  });
-                }
-                return null;
-              },
+              validator: (value) => null, // We'll handle validation in _registerUser
             ),
           ),
         ),
@@ -191,39 +207,90 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _registerUser() async {
-    if (_formKey.currentState!.validate() && _passwordsMatch) {
-      final Map<String, dynamic> requestBody = {
-        'username': _usernameController.text,
-        'password': _passwordController.text,
-      };
+    // Clear previous errors
+    setState(() {
+      _passwordError = null;
+      _confirmPasswordError = null;
+    });
 
-      try {
-        final response = await http.post(
-          Uri.parse('${dotenv.env['url']}/api/user/register'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode(requestBody),
-        );
+    // Validate fields
+    if (_usernameController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('โปรดกรอกชื่อผู้ใช้งาน')),
+      );
+      return;
+    }
 
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          // Registration successful
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Registration successful!')),
-          );
-          // Clear form and navigate
-          _usernameController.clear();
-          _passwordController.clear();
-          _confirmpasswordController.clear();
-          Navigator.pop(context);
-        } else {
-          // Registration failed
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Registration failed: ${response.body}')),
-          );
-        }
-      } catch (e) {
+    if (_passwordController.text.isEmpty) {
+      setState(() => _passwordError = 'โปรดกรอกรหัสผ่าน');
+      return;
+    }
+
+    if (_passwordController.text.length < 6) {
+      setState(() => _passwordError = 'รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร');
+      return;
+    }
+
+    if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$').hasMatch(_passwordController.text)) {
+      setState(() => _passwordError = 'รหัสผ่านต้องมีตัวพิมพ์ใหญ่, ตัวพิมพ์เล็ก และตัวเลข');
+      return;
+    }
+
+    if (_confirmPasswordController.text.isEmpty) {
+      setState(() => _confirmPasswordError = 'โปรดกรอกยืนยันรหัสผ่าน');
+      return;
+    }
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+      setState(() => _confirmPasswordError = 'รหัสผ่านไม่ตรงกัน');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    // Hash the password before sending
+    final hashedPassword = _hashPassword(_passwordController.text);
+
+    final Map<String, dynamic> requestBody = {
+      'username': _usernameController.text.trim(),
+      'password': hashedPassword,
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse('${dotenv.env['url']}/api/user/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(requestBody),
+      ).timeout(const Duration(seconds: 30));
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          const SnackBar(
+            content: Text('ลงทะเบียนสำเร็จ!'),
+            backgroundColor: Colors.green,
+          ),
         );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(responseData['message'] ?? 'การลงทะเบียนล้มเหลว'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('เกิดข้อผิดพลาด: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -232,7 +299,7 @@ class _RegisterPageState extends State<RegisterPage> {
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
-    _confirmpasswordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 }

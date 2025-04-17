@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const mysql = require('mysql2');
 const path = require("path");
 const multer = require('multer');
+const crypto = require('crypto');
 
 const app = express();
 app.use(express.json());
@@ -341,41 +342,46 @@ router.post('/posts/search', async (req, res) => {
 });
 
 router.post('/api/login', function (req, res) {
-    const { username, password } = req.body;
+  const { username, password } = req.body;
 
-    if (!username || !password) {
-        return res.status(400).send({
-            success: false,
-            message: 'Please provide username and password'
-        });
-    }
+  if (!username || !password) {
+      return res.status(400).send({
+          success: false,
+          message: 'Please provide username and password'
+      });
+  }
 
-    Connection.query(
-        'SELECT uid FROM Users WHERE username = ? AND password = ?',
-        [username, password],
-        function (error, results) {
-            if (error) {
-                return res.status(500).send({
-                    success: false,
-                    message: 'Database error',
-                    error
-                });
-            }
+  // Hash the received password to compare with stored hash
+  const hashedPassword = crypto.createHash('sha256')
+                             .update(password)
+                             .digest('hex');
 
-            if (results.length > 0) {
-                return res.send({
-                    success: true,
-                    uid: results[0].uid,
-                    message: 'Login successful'
-                });
-            } else {
-                return res.send({
-                    success: false,
-                    message: 'Invalid username or password'
-                });
-            }
-        }
-    );
+  Connection.query(
+      'SELECT uid FROM Users WHERE username = ? AND password = ?',
+      [username, hashedPassword], // Compare with stored hash
+      function (error, results) {
+          if (error) {
+              console.error('Login error:', error);
+              return res.status(500).send({
+                  success: false,
+                  message: 'Database error'
+              });
+          }
+
+          if (results.length > 0) {
+              return res.send({
+                  success: true,
+                  uid: results[0].uid,
+                  message: 'Login successful'
+              });
+          } else {
+              return res.send({
+                  success: false,
+                  message: 'Invalid username or password'
+              });
+          }
+      }
+  );
 });
 
 
@@ -495,45 +501,69 @@ router.post('/api/tags', async (req, res) => {
 });
 
 // Post New User Infomation
-app.post('/api/user/register', (req, res) => {
-  const { username, password } = req.body;
-  const joinDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+app.post('/api/user/register', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const joinDate = new Date().toISOString().split('T')[0];
 
-  // Validate input
-  if (!username || !password) {
-    return res.status(400).json({ error: true, message: 'Username and password are required' });
-  }
+    // Validate input
+    if (!username || !password) {
+      return res.status(400).json({ 
+        error: true, 
+        message: 'ต้องระบุชื่อผู้ใช้งานและรหัสผ่าน' 
+      });
+    }
 
-  // Check if username exists
-  Connection.query(
-    'SELECT * FROM Users WHERE username = ?', 
-    [username],
-    (err, results) => {
-      if (err) {
-        return res.status(500).json({ error: true, message: 'Database error' });
-      }
-      
-      if (results.length > 0) {
-        return res.status(400).json({ error: true, message: 'Username already exists' });
-      }
+    if (password.length < 6) {
+      return res.status(400).json({ 
+        error: true, 
+        message: 'รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร' 
+      });
+    }
 
-      // Insert new user
+    // Check if username exists
+    const [existingUser] = await new Promise((resolve, reject) => {
+      Connection.query(
+        'SELECT * FROM Users WHERE username = ?', 
+        [username],
+        (err, results) => err ? reject(err) : resolve(results)
+      );
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ 
+        error: true, 
+        message: 'ชื่อผู้ใช้งานนี้มีอยู่แล้ว' 
+      });
+    }
+
+    // Hash the password
+    const hashedPassword = crypto.createHash('sha256')
+                               .update(password)
+                               .digest('hex');
+
+    // Insert new user
+    const result = await new Promise((resolve, reject) => {
       Connection.query(
         'INSERT INTO Users (username, password, joinDate) VALUES (?, ?, ?)',
-        [username, password, joinDate],
-        (err, results) => {
-          if (err) {
-            return res.status(500).json({ error: 'Failed to register user' });
-          }
-          
-          res.status(201).json({ 
-            message: 'User registered successfully',
-            uid: results.insertId
-          });
-        }
+        [username.trim(), hashedPassword, joinDate],
+        (err, results) => err ? reject(err) : resolve(results)
       );
-    }
-  );
+    });
+
+    res.status(201).json({ 
+      success: true,
+      message: 'ลงทะเบียนสำเร็จ',
+      uid: result.insertId
+    });
+
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ 
+      error: true, 
+      message: 'เกิดข้อผิดพลาดในระบบ' 
+    });
+  }
 });
 
 router.get('/api/follow/status', async (req, res) => {
@@ -612,13 +642,79 @@ app.get('/api/following/posts/:uid', (req, res) => {
 
 
 // Update Password
-router.put('/api/user/:uid', function (req, res){
-  let uid = req.params.uid
-  let password = req.body.password
-  Connection.query('UPDATE Users SET password = ? WHERE uid = ?', [password, uid], function (error, results){
-      if (error) throw error;
-      return res.send({error: false, data: results, message: 'Password Update!'})
-  })
+router.put('/api/user/:uid', async function (req, res) {
+  try {
+    const uid = req.params.uid;
+    const { password, old_password } = req.body;
+
+    // Validate required fields
+    if (!password || !old_password) {
+      return res.status(400).json({
+        error: true,
+        message: 'Both new password and old password are required'
+      });
+    }
+
+    // First get the user's current password hash from database
+    const [user] = await new Promise((resolve, reject) => {
+      Connection.query(
+        'SELECT password FROM Users WHERE uid = ?', 
+        [uid], 
+        (error, results) => {
+          if (error) return reject(error);
+          resolve(results);
+        }
+      );
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        error: true,
+        message: 'User not found'
+      });
+    }
+
+    // Verify old password matches (compare hashes)
+    const oldPasswordHash = crypto.createHash('sha256')
+                                 .update(old_password)
+                                 .digest('hex');
+
+    if (oldPasswordHash !== user.password) {
+      return res.status(401).json({
+        error: true,
+        message: 'Old password is incorrect'
+      });
+    }
+
+    // Update with new hashed password
+    const newPasswordHash = crypto.createHash('sha256')
+                                 .update(password)
+                                 .digest('hex');
+
+    const results = await new Promise((resolve, reject) => {
+      Connection.query(
+        'UPDATE Users SET password = ? WHERE uid = ?', 
+        [newPasswordHash, uid], 
+        (error, results) => {
+          if (error) return reject(error);
+          resolve(results);
+        }
+      );
+    });
+
+    return res.json({
+      error: false,
+      data: results,
+      message: 'Password updated successfully'
+    });
+
+  } catch (error) {
+    console.error('Password update error:', error);
+    return res.status(500).json({
+      error: true,
+      message: 'Internal server error'
+    });
+  }
 });
 
 router.post('/api/comment',upload.array('images', 4), (req, res) => {

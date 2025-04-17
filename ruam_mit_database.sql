@@ -5,7 +5,7 @@ use mobile_s2_gr2;
 create table if not exists Users (
 	uid				int				not null	auto_increment,
     username		varchar(20)		not null,
-    password		varchar(20)		not null,
+    password		varchar(64)		not null,
     profile			varchar(300),
     joinDate		date			not null,
     constraint		PK_users		primary key (uid)
@@ -72,7 +72,7 @@ create table if not exists Follow(
 
 -- first post has to specify to initiate autoincrement
 insert into Users values
-	(1000001, 'admin', 'p@ssw0rd', null, '2025-03-01');
+	(1000001, 'admin', '0e69e6a4038df88d4c62c837edd7e04a95ea6368bca9d469e00ad766a2266770', null, '2025-03-01');
 
 insert into Post (caption, detail, mij_bank, mij_bankno, mij_name, mij_acc, mij_plat, p_timestamp, uid) values(
 	'test post no 1', 'asddhkflffvvmvnvkccpdkfmrbdvchxjldlcc;sjsnxkcc',
@@ -80,7 +80,7 @@ insert into Post (caption, detail, mij_bank, mij_bankno, mij_name, mij_acc, mij_
 );
 
 insert into Users values
-	(null, 'member A', 'p@ssw0rd123', null, '2025-03-03');
+	(null, 'member A', '82c9ba26e0411d99c408990245c55e2fafe31ce184a8059744e5e9ecf75920d9', null, '2025-03-03');
     
 insert into Post values(
 	null, 'test post no 2', 'poiufdsdcvbnmklkjhgfdcvbnm,lkjhgfvbnm,lkjhgf',
@@ -107,7 +107,7 @@ insert into Likes values
 insert into Follow values
 	(1, 1000002, '2025-04-08 20:20:20');
 
-select * from Comments;
+select * from Likes;
 
 -- fetch posts by tag
 select p.* from post p inner join tags t on p.postId = t.postId where t.tag = 'tag';

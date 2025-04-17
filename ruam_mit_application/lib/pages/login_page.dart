@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert'; // for jsonDecode
+import 'dart:convert'; 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'bottomNav.dart';
+import 'package:crypto/crypto.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,15 +17,22 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
+  String _hashPassword(String password) {
+    var bytes = utf8.encode(password);
+    var digest = sha256.convert(bytes);
+    return digest.toString();
   }
 
   Future<void> loginUser(String username, String password) async {
+    // Hash the password before sending
+    final hashedPassword = _hashPassword(password);
+
     final response = await http.post(
       Uri.parse('${dotenv.env['url']}/api/login'),
-      body: {'username': username, 'password': password},
+      body: {
+        'username': username, 
+        'password': hashedPassword
+      },
     );
 
     final data = json.decode(response.body);
@@ -32,20 +40,24 @@ class _LoginPageState extends State<LoginPage> {
     if (data['success'] == true) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', true);
-      await prefs.setInt('uid', data['uid']); // save the UID
+      await prefs.setInt('uid', data['uid']);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const Bottomnav()),
       );
     } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginPage()),
-      );
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ล็อกอินไม่สำเร็จ กรุณาลองอีกครั้ง')),
+        SnackBar(
+          content: Text(data['message'] ?? 'ล็อกอินไม่สำเร็จ กรุณาลองอีกครั้ง'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
   }
 
   Future<bool> isLoggedIn() async {
