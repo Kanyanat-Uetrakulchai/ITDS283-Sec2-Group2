@@ -53,10 +53,10 @@ class PostCard extends StatelessWidget {
                 post['caption'] ?? '',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
-              SizedBox(height: 10),
-              ImageGrid(post: post),
 
               if (showDetails) ...[SizedBox(height: 15), _buildDetailSection()],
+              SizedBox(height: 10),
+              ImageGrid(post: post),
 
               if (post['tags'] != null && post['tags'].isNotEmpty)
                 _buildTagsSection(context),

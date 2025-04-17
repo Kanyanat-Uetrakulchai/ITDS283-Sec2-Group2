@@ -43,7 +43,6 @@ router.get('/api/posts', function (req, res) {
   Connection.query(`
       SELECT 
           p.*, 
-          u.profile, 
           u.username, 
           IFNULL(GROUP_CONCAT(DISTINCT t.tag), '') as tags
       FROM Post p 
@@ -87,7 +86,6 @@ router.get('/api/posts/:tag', function (req, res) {
   Connection.query(`
       SELECT 
           p.*, 
-          u.profile, 
           u.username, 
           IFNULL(GROUP_CONCAT(DISTINCT t2.tag), '') as tags
       FROM Post p 
@@ -141,7 +139,6 @@ router.get('/api/post/:postId', function (req, res) {
       SELECT 
           p.*,
           u.username,
-          u.profile,
           IFNULL(GROUP_CONCAT(DISTINCT t.tag), '') as tags
       FROM Post p
       LEFT JOIN Users u ON p.uid = u.uid
@@ -191,7 +188,6 @@ router.get('/api/profile/post/:uid', function (req, res) {
       SELECT 
           p.*,
           u.username,
-          u.profile,
           IFNULL(GROUP_CONCAT(DISTINCT t.tag), '') as tags
       FROM Post p
       JOIN Users u ON p.uid = u.uid
@@ -274,9 +270,10 @@ router.post('/posts/search', async (req, res) => {
     
     let baseQuery = `
       SELECT 
-        p.*,
+        p.*, u.uid, u.username,
         GROUP_CONCAT(t.tag) as tags
       FROM Post p
+      LEFT JOIN Users u ON p.uid = u.uid
       LEFT JOIN Tags t ON p.postId = t.postId
     `;
     
