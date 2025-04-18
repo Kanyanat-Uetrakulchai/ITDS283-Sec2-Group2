@@ -361,6 +361,7 @@ class _NewpostPageState extends State<NewpostPage> {
                     'ธนาคารกรุงไทย',
                     'ธนาคารไทยพาณิชย์',
                     'ธนาคารกรุงเทพ',
+                    'ธนาคารกรุงศรี',
                   ].map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
