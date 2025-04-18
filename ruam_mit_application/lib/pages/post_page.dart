@@ -18,7 +18,6 @@ class PostPage extends StatefulWidget {
 }
 
 class _PostPageState extends State<PostPage> {
-  final TextEditingController _comment = TextEditingController();
   final GlobalKey<PostReactionButtonsState> _reactionKey = GlobalKey();
 
   int? _uid;
@@ -124,10 +123,6 @@ class _PostPageState extends State<PostPage> {
         _loading = false;
       });
     }
-  }
-
-  Future<void> _createComment() async {
-    final comment = _comment.text;
   }
 
   Future<void> _toggleFollowStatus() async {

@@ -87,15 +87,31 @@ class _SearchPageState extends State<SearchPage> {
             children: [
               bankDropdown(),
               SizedBox(height: 15),
-              buildTextFieldRow('หมายเลขบัญชี', _accountNumberController),
+              buildTextFieldRow(
+                'หมายเลขบัญชี',
+                _accountNumberController,
+                'xxxxxxxxxx',
+              ),
               SizedBox(height: 15),
-              buildTextFieldRow('ชื่อ - นามสกุล', _nameController),
+              buildTextFieldRow(
+                'ชื่อ - นามสกุล',
+                _nameController,
+                'ชื่อ นามสกุล',
+              ),
               SizedBox(height: 15),
-              buildTextFieldRow('ชื่อร้านค้า', _shopNameController),
+              buildTextFieldRow(
+                'ชื่อร้านค้า',
+                _shopNameController,
+                'ชื่อเพจ/ร้าน',
+              ),
               SizedBox(height: 15),
-              buildTextFieldRow('ช่องทางการสั่งซื้อ', _orderChannelController),
+              buildTextFieldRow(
+                'ช่องทางการสั่งซื้อ',
+                _orderChannelController,
+                'เช่น facebook, X, instagram',
+              ),
               SizedBox(height: 15),
-              buildTextFieldRow('Tag', _tagController),
+              buildTextFieldRow('Tag', _tagController, '#แท็ก #แท็ก2'),
               SizedBox(height: 15),
               Divider(color: Color(0xFFACACAC)),
               SizedBox(height: 15),
@@ -138,7 +154,11 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Row buildTextFieldRow(String label, TextEditingController controller) {
+  Row buildTextFieldRow(
+    String label,
+    TextEditingController controller,
+    String hint,
+  ) {
     return Row(
       children: [
         Container(
@@ -161,6 +181,12 @@ class _SearchPageState extends State<SearchPage> {
             decoration: InputDecoration(
               contentPadding: EdgeInsets.symmetric(horizontal: 10),
               border: InputBorder.none,
+              hintText: hint,
+              hintStyle: TextStyle(
+                fontFamily: 'Prompt',
+                fontSize: 16,
+                color: Colors.grey,
+              ),
             ),
             style: TextStyle(fontFamily: 'Prompt', fontSize: 16),
           ),

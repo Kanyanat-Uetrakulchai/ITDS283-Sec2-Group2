@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // for jsonDecode
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'post_page.dart';
 import '../components/posts.dart';
 
 class PostBytag extends StatefulWidget {
