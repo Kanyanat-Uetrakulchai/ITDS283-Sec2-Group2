@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:ruam_mit_application/pages/profile_page.dart';
-import 'package:ruam_mit_application/pages/post_page.dart';
-import 'package:ruam_mit_application/pages/post_bytag.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:ruam_mit_application/components/posts.dart';
 
