@@ -16,6 +16,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  String? _usernameError;
   String? _passwordError;
   String? _confirmPasswordError;
   bool _isLoading = false;
@@ -86,8 +87,16 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                       ),
               ),
-              if (_passwordError != null || _confirmPasswordError != null) ...[
+              if (_usernameError != null || _passwordError != null || _confirmPasswordError != null) ...[
                 const SizedBox(height: 20),
+                if (_usernameError != null)
+                  Text(
+                    _usernameError!,
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontFamily: 'Prompt',
+                    ),
+                  ),
                 if (_passwordError != null)
                   Text(
                     _passwordError!,
@@ -209,15 +218,14 @@ class _RegisterPageState extends State<RegisterPage> {
   Future<void> _registerUser() async {
     // Clear previous errors
     setState(() {
+      _usernameError = null;
       _passwordError = null;
       _confirmPasswordError = null;
     });
 
     // Validate fields
     if (_usernameController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('โปรดกรอกชื่อผู้ใช้งาน')),
-      );
+      setState(() => _usernameError = 'โปรดกรอกชื่อผู้ใช้งาน');
       return;
     }
 
