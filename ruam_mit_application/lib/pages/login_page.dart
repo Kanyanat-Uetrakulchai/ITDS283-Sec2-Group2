@@ -16,6 +16,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _obscurePassword = true; // Added for password visibility toggle
 
   String _hashPassword(String password) {
     var bytes = utf8.encode(password);
@@ -91,6 +92,12 @@ class _LoginPageState extends State<LoginPage> {
               'password',
               _passwordController,
               isPassword: true,
+              obscureText: _obscurePassword,
+              onVisibilityChanged: () {
+                setState(() {
+                  _obscurePassword = !_obscurePassword;
+                });
+              },
             ),
             const SizedBox(height: 25),
             GestureDetector(
@@ -108,7 +115,6 @@ class _LoginPageState extends State<LoginPage> {
                   );
                 }
               },
-
               child: Image.asset('assets/login_button.png'),
             ),
             const SizedBox(height: 30),
@@ -123,12 +129,12 @@ class _LoginPageState extends State<LoginPage> {
                     fontSize: 18,
                   ),
                 ),
-                SizedBox(width: 10,),
+                const SizedBox(width: 10),
                 GestureDetector(
                   onTap: () {
                     Navigator.pushNamed(context, '/register');
                   },
-                  child: Text(
+                  child: const Text(
                     'ลงทะเบียน',
                     style: TextStyle(
                       fontFamily: 'Prompt',
@@ -150,6 +156,8 @@ class _LoginPageState extends State<LoginPage> {
     String label,
     TextEditingController controller, {
     bool isPassword = false,
+    bool obscureText = false,
+    VoidCallback? onVisibilityChanged,
   }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -173,13 +181,22 @@ class _LoginPageState extends State<LoginPage> {
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: TextField(
               controller: controller,
-              decoration: const InputDecoration(
-                contentPadding: EdgeInsets.symmetric(vertical: 10),
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
                 border: InputBorder.none,
                 isDense: true,
+                suffixIcon: isPassword
+                    ? IconButton(
+                        icon: Icon(
+                          obscureText ? Icons.visibility : Icons.visibility_off,
+                          color: Colors.grey,
+                        ),
+                        onPressed: onVisibilityChanged,
+                      )
+                    : null,
               ),
               style: const TextStyle(fontFamily: 'Prompt', fontSize: 16),
-              obscureText: isPassword,
+              obscureText: isPassword && obscureText,
             ),
           ),
         ),

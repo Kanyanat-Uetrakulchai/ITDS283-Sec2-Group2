@@ -20,6 +20,8 @@ class _RegisterPageState extends State<RegisterPage> {
   String? _passwordError;
   String? _confirmPasswordError;
   bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   String _hashPassword(String password) {
     var bytes = utf8.encode(password);
@@ -55,12 +57,24 @@ class _RegisterPageState extends State<RegisterPage> {
                 label: 'รหัสผ่าน', 
                 controller: _passwordController,
                 isPasswordField: true,
+                obscureText: _obscurePassword,
+                onVisibilityChanged: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
               ),
               const SizedBox(height: 20),
               _buildPasswordField(
                 label: 'ยืนยันรหัสผ่าน', 
                 controller: _confirmPasswordController,
                 isConfirmField: true,
+                obscureText: _obscureConfirmPassword,
+                onVisibilityChanged: () {
+                  setState(() {
+                    _obscureConfirmPassword = !_obscureConfirmPassword;
+                  });
+                },
               ),
               const SizedBox(height: 30),
               ElevatedButton(
@@ -148,7 +162,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             child: TextFormField(
               controller: controller,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 15),
                 border: InputBorder.none,
               ),
@@ -174,6 +188,8 @@ class _RegisterPageState extends State<RegisterPage> {
     required TextEditingController controller,
     bool isPasswordField = false,
     bool isConfirmField = false,
+    required bool obscureText,
+    required VoidCallback onVisibilityChanged,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -198,10 +214,17 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             child: TextFormField(
               controller: controller,
-              obscureText: true,
+              obscureText: obscureText,
               decoration: InputDecoration(
-                contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 15),
+                contentPadding: const EdgeInsets.fromLTRB(10, 10, 10, 15),
                 border: InputBorder.none,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    obscureText ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.grey,
+                  ),
+                  onPressed: onVisibilityChanged,
+                ),
               ),
               style: const TextStyle(
                 fontFamily: 'Prompt',
